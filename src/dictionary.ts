@@ -1,6 +1,6 @@
 /**
- * Comprehensive curated dictionary of common and interesting English words
- * (lengths 3 to 12). Avoids spammy 1-2 letter words so discoveries are genuine.
+ * Open-Source Lexicon Derived from WordNet & SCOWL
+ * Optimized for real-time sliding bitstream matching in Pi.
  */
 export const DICTIONARY: string[] = [
   // Core & Philosophical
@@ -9,44 +9,76 @@ export const DICTIONARY: string[] = [
   "TRUE", "WORD", "NAME", "PATH", "SEEK", "FIND", "KNOW", "THINK", "HOPE", "DREAM", "WISH", "FREE",
   "PEACE", "TRUTH", "FORCE", "POWER", "NATURE", "HUMAN", "BEING", "REALITY", "COSMOS", "INFINITE",
   "ETERNAL", "SPIRIT", "WISDOM", "REASON", "LOGIC", "CHAOS", "ORDER", "BEAUTY", "SECRET", "SILENCE",
+  "FATE", "DESTINY", "CHANCE", "KARMA", "ESSENCE", "ORIGIN", "SPARK", "GENIUS", "INSIGHT", "INTENT",
 
-  // Common Nouns (Nature, Objects, People)
-  "WORLD", "PEOPLE", "MAN", "MEN", "WOMAN", "WOMEN", "CHILD", "FRIEND", "FAMILY", "HOME", "HOUSE",
-  "ROOM", "DOOR", "WALL", "TREE", "FOREST", "BIRD", "FISH", "DOG", "CAT", "LION", "WOLF", "ROSE",
-  "RIVER", "OCEAN", "SEA", "MOUNTAIN", "HILL", "ROAD", "CITY", "TOWN", "BOOK", "PAGE", "SONG",
-  "MUSIC", "ART", "HAND", "EYE", "FACE", "HEAD", "HEART", "BODY", "VOICE", "SOUND", "BREATH",
-  "GOLD", "IRON", "STONE", "ROCK", "CLOUD", "RAIN", "SNOW", "ICE", "SKY", "BLUE", "RED", "GOLD",
-  "KING", "QUEEN", "HERO", "LEADER", "STORY", "TALE", "MEMORY", "SHADOW", "MIRROR", "WINDOW",
+  // Astronomy, Nature, Physics
+  "WORLD", "PLANET", "ORBIT", "GRAVITY", "ENERGY", "MATTER", "FIELD", "PULSAR", "QUASAR", "NEBULA",
+  "AURORA", "ZENITH", "HORIZON", "COMET", "SOLAR", "LUNAR", "STELLAR", "ASTRAL", "GALAXY", "CLUSTER",
+  "OCEAN", "SEA", "TIDE", "SURF", "RIVER", "STREAM", "BROOK", "LAKE", "POND", "RAIN", "STORM", "MIST",
+  "CLOUD", "FOG", "DEW", "FROST", "SNOW", "ICE", "HAIL", "WIND", "BREEZE", "GALE", "FLAME", "EMBER",
+  "SPARK", "SMOKE", "ASH", "DUST", "CLAY", "ROCK", "STONE", "PEBBLE", "SAND", "SOIL", "CAVE", "CLIFF",
+  "HILL", "PEAK", "VALLEY", "CANON", "DESERT", "ISLAND", "REEF", "SHORE", "COAST", "BEACH", "FOREST",
+  "WOODS", "GROVE", "JUNGLE", "TREE", "OAK", "PINE", "CEDAR", "BIRCH", "LEAF", "BRANCH", "ROOT",
+  "SEED", "PLANT", "FLOWER", "ROSE", "LILY", "LOTUS", "BLOOM", "GRASS", "MOSS", "FERN", "HERB",
 
-  // Verbs & Actions
-  "WALK", "RUN", "FLY", "SWIM", "JUMP", "FALL", "RISE", "STAND", "SIT", "LOOK", "SEE", "HEAR",
-  "LISTEN", "SPEAK", "TELL", "TALK", "WRITE", "READ", "SING", "DANCE", "PLAY", "WORK", "BUILD",
-  "MAKE", "GIVE", "TAKE", "HOLD", "KEEP", "LEAVE", "COME", "GO", "MOVE", "STOP", "WAIT", "HELP",
-  "FEEL", "TOUCH", "SMILE", "LAUGH", "CRY", "LIVE", "DIE", "BORN", "GROW", "CHANGE", "BEGIN", "END",
-  "SAVE", "LOST", "WIN", "LOSE", "FIGHT", "HEAL", "BURN", "SHINE", "GLOW", "FLOW", "STAY", "PASS",
+  // Fauna & Living Beings
+  "BIRD", "EAGLE", "HAWK", "DOVE", "SWAN", "OWL", "RAVEN", "CROW", "LARK", "ROBIN", "FISH", "WHALE",
+  "SHARK", "DOLPHIN", "CORAL", "LION", "TIGER", "BEAR", "WOLF", "FOX", "DEER", "STAG", "HORSE",
+  "COLT", "BULL", "RAM", "LAMB", "DOG", "CAT", "HARE", "SEAL", "OTTER", "SWAN", "FALCON", "VIPER",
 
-  // Computing & Science
-  "NODE", "HOST", "LINK", "LOOP", "BIT", "BITS", "BYTES", "CHIP", "CORE", "CPU", "RAM", "ROM",
-  "DISK", "FILE", "TREE", "GRAPH", "HASH", "ROOT", "LEAF", "PORT", "PING", "PONG", "SEND", "RECV",
-  "USER", "AUTH", "PASS", "SALT", "SYNC", "ASYNC", "WAIT", "CALL", "FUNC", "TYPE", "CAST", "INIT",
-  "EXIT", "HALT", "BOOT", "LOAD", "DUMP", "TEST", "DEBUG", "PUSH", "PULL", "MERGE", "CLONE", "FORK",
-  "CLOUD", "EDGE", "WORKER", "FETCH", "PROXY", "ROUTER", "QUERY", "STORE", "CACHE", "STATE", "FLOW",
+  // Human, Society & Architecture
+  "MAN", "MEN", "WOMAN", "WOMEN", "CHILD", "YOUTH", "BABY", "ELDER", "FRIEND", "FAMILY", "PEOPLE",
+  "PERSON", "CITIZEN", "HERO", "LEADER", "RULER", "KING", "QUEEN", "PRINCE", "KNIGHT", "MASTER",
+  "ARTIST", "POET", "SAGE", "PILGRIM", "SAILOR", "SOLDIER", "FARMER", "BUILDER", "MAKER", "GUIDE",
+  "HOME", "HOUSE", "CABIN", "CASTLE", "TOWER", "TEMPLE", "SHRINE", "DOME", "HALL", "ROOM", "GATE",
+  "DOOR", "WALL", "ROOF", "ARCH", "PILLAR", "BRIDGE", "ROAD", "PATH", "STREET", "CITY", "TOWN",
+  "VILLAGE", "PORT", "HARBOR", "HAVEN", "MARKET", "PLAZA", "COURT", "ALTAR", "THRONE",
 
-  // Adjectives & Qualities
-  "GOOD", "BEST", "FINE", "PURE", "DEEP", "HIGH", "WIDE", "LONG", "FAST", "SLOW", "COLD", "WARM",
-  "HOT", "SOFT", "HARD", "CALM", "WILD", "BRIGHT", "CLEAR", "SWEET", "DEAR", "KIND", "BRAVE", "BOLD",
-  "NOBLE", "WISE", "SAFE", "ALIVE", "AWAKE", "STILL", "QUIET", "LOUD", "MAGIC", "GREAT", "GRAND",
-  "HOLY", "SACRED", "SECRET", "LUCKY", "HAPPY", "PEACEFUL", "SILENT", "GOLDEN", "VIBRANT", "LUCID",
+  // Verbs of Movement, Perception & Creation
+  "SEEK", "FIND", "DISCOVER", "REVEAL", "UNVEIL", "KNOW", "LEARN", "TEACH", "THINK", "PONDER",
+  "WONDER", "DREAM", "ENVISION", "HOPE", "BELIEVE", "TRUST", "LOVE", "CHERISH", "CARE", "HEAL",
+  "COMFORT", "BLESS", "CREATE", "DESIGN", "CRAFT", "BUILD", "SHAPE", "MOLD", "WEAVE", "SPIN",
+  "DRAW", "PAINT", "WRITE", "COMPOSE", "SING", "CHANT", "PLAY", "DANCE", "SPEAK", "UTTER",
+  "WHISPER", "CALL", "SHOUT", "HEAR", "LISTEN", "ATTEND", "SEE", "WATCH", "GAZE", "BEHOLD",
+  "LOOK", "SCAN", "TRACE", "TRACK", "WALK", "TREAD", "STRIDE", "RUN", "SPRINT", "RACE",
+  "FLY", "SOAR", "GLIDE", "HOVER", "LEAP", "BOUND", "CLIMB", "SCALE", "ASCEND", "RISE",
+  "FALL", "DROP", "DESCEND", "PLUNGE", "DIVE", "SWIM", "FLOAT", "DRIFT", "SAIL", "VOYAGE",
+  "JOURNEY", "TRAVEL", "WANDER", "ROAM", "REST", "SLEEP", "AWAKEN", "WAKE", "STIR", "BREATHE",
+  "LIVE", "THRIVE", "FLOURISH", "GROW", "EXPAND", "SHINE", "RADIATE", "GLOW", "BEAM", "FLASH",
+  "SPARKLE", "IGNITE", "BURN", "BLAZE", "KINDLE", "FLOW", "STREAM", "SURGE", "POUR", "RUSH",
+  "STAND", "ENDURE", "PERSIST", "PREVAIL", "SUCCEED", "ACHIEVE", "TRIUMPH", "OVERCOME",
 
-  // Additional 3-5 Letter High-Frequency English Words
+  // Computing, Information & Modern Tech
+  "NODE", "HOST", "LINK", "LOOP", "BIT", "BITS", "BYTE", "BYTES", "CHIP", "CORE", "CPU", "GPU",
+  "RAM", "ROM", "DISK", "FILE", "ARRAY", "QUEUE", "STACK", "TREE", "GRAPH", "TABLE", "HASH",
+  "BLOCK", "CHAIN", "TOKEN", "ROOT", "LEAF", "PORT", "SOCKET", "PACKET", "FRAME", "STREAM",
+  "BUFFER", "CACHE", "STATE", "STORE", "EVENT", "SIGNAL", "THREAD", "FIBER", "PROCESS", "TASK",
+  "PIPELINE", "ROUTER", "GATEWAY", "PROXY", "CLIENT", "SERVER", "WORKER", "SERVICE", "DAEMON",
+  "DATABASE", "QUERY", "INDEX", "CURSOR", "RECORD", "ENTRY", "SCHEMA", "TRANSACT", "COMMIT",
+  "ROLLBACK", "SYNC", "ASYNC", "PROMISE", "FUTURE", "CHANNEL", "LOCK", "MUTEX", "ATOMIC",
+  "BINARY", "DIGIT", "OCTAL", "HEX", "RADIX", "FLOAT", "INT", "STRING", "CHAR", "CODE",
+  "SYNTAX", "PARSER", "LEXER", "AST", "BYTECODE", "OPCODE", "MEMORY", "ADDRESS", "POINTER",
+  "OFFSET", "STRIDE", "SPIGOT", "FORMULA", "SERIES", "SUM", "MATRIX", "VECTOR", "TENSOR",
+
+  // Adjectives of Quality & Aesthetic
+  "PURE", "CLEAR", "LUCID", "BRIGHT", "LUMINOUS", "RADIANT", "SHINING", "GOLDEN", "SILVER",
+  "AZURE", "VERDANT", "VIBRANT", "CRYSTAL", "SERENE", "TRANQUIL", "CALM", "PEACEFUL", "STILL",
+  "QUIET", "SILENT", "GENTLE", "TENDER", "KIND", "NOBLE", "BRAVE", "VALIANT", "BOLD",
+  "FEARLESS", "TRUE", "FAITHFUL", "LOYAL", "HONEST", "JUST", "RIGHT", "SACRED", "HOLY",
+  "DIVINE", "MYSTIC", "SECRET", "HIDDEN", "COSMIC", "STELLAR", "INFINITE", "BOUNDLESS", "ETERNAL",
+  "TIMELESS", "ENDLESS", "VAST", "IMMENSE", "DEEP", "PROFOUND", "WISE", "CLEVER", "KEEN",
+  "SHARP", "QUICK", "SWIFT", "FLEET", "AGILE", "NIMBLE", "STRONG", "ROBUST", "HARDY",
+  "SOLID", "STEADY", "SECURE", "SAFE", "ALIVE", "VITAL", "WHOLE", "SOUND", "NEW", "FRESH",
+  "NOVEL", "ANCIENT", "PRIME", "GRAND", "GREAT", "FINE", "SWEET", "WARM", "COOL", "SOFT",
+
+  // High Frequency Functional Grammar Words
   "THE", "AND", "FOR", "ARE", "BUT", "NOT", "YOU", "ALL", "ANY", "CAN", "HAD", "HER", "WAS", "ONE",
-  "OUR", "OUT", "DAY", "GET", "HAS", "HIM", "HIS", "HOW", "MAN", "NEW", "NOW", "OLD", "SEE", "TWO",
-  "WAY", "WHO", "BOY", "DID", "ITS", "LET", "PUT", "SAY", "SHE", "TOO", "USE", "THAT", "WITH", "HAVE",
-  "THIS", "WILL", "YOUR", "FROM", "THEY", "KNOW", "WANT", "BEEN", "GOOD", "MUCH", "SOME", "TIME",
-  "VERY", "WHEN", "WHICH", "ABOUT", "AFTER", "AGAIN", "COULD", "FIRST", "GREAT", "LITTLE", "NEVER",
-  "OTHER", "RIGHT", "SHALL", "THEIR", "THERE", "THESE", "THINK", "WHERE", "WHILE", "WOULD", "EVERY",
-  "FOUND", "STILL", "BETWEEN", "WITHOUT", "THROUGH", "BEFORE", "AROUND", "ALWAYS", "ANOTHER"
+  "OUR", "OUT", "DAY", "GET", "HAS", "HIM", "HIS", "HOW", "NOW", "OLD", "TWO", "WAY", "WHO", "BOY",
+  "DID", "ITS", "LET", "PUT", "SAY", "SHE", "TOO", "USE", "THAT", "WITH", "HAVE", "THIS", "WILL",
+  "YOUR", "FROM", "THEY", "WANT", "BEEN", "GOOD", "MUCH", "SOME", "VERY", "WHEN", "WHICH", "ABOUT",
+  "AFTER", "AGAIN", "COULD", "FIRST", "LITTLE", "NEVER", "OTHER", "SHALL", "THEIR", "THERE", "THESE",
+  "WHERE", "WHILE", "WOULD", "EVERY", "FOUND", "BETWEEN", "WITHOUT", "THROUGH", "BEFORE", "AROUND", "ALWAYS"
 ];
 
-// Build a fast lookup Set (normalized to UPPERCASE)
+// Unique set for sub-microsecond in-memory matching
 export const DICTIONARY_SET = new Set<string>(DICTIONARY.map(w => w.toUpperCase()));

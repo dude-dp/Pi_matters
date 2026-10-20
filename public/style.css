@@ -737,6 +737,109 @@ body {
   to { transform: rotate(360deg); }
 }
 
+/* Wiktionary Definition Drawer & Audio Player */
+.card-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.25rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.btn-dict {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.8rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--accent-cyan);
+  background: rgba(0, 242, 254, 0.08);
+  border: 1px solid rgba(0, 242, 254, 0.25);
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.btn-dict:hover {
+  background: rgba(0, 242, 254, 0.18);
+  transform: translateY(-1px);
+}
+
+.definition-drawer {
+  display: none;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(0, 242, 254, 0.2);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.15rem;
+  margin-top: 0.5rem;
+  animation: fadeIn 0.25s ease-out;
+}
+.definition-drawer.open {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.def-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.def-phonetic {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  color: var(--accent-cyan);
+}
+
+.def-pos-tag {
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  background: rgba(255, 183, 3, 0.15);
+  color: var(--accent-gold);
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+}
+
+.def-body {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: #e2e8f0;
+}
+
+.def-example {
+  margin-top: 0.4rem;
+  font-size: 0.8125rem;
+  font-style: italic;
+  color: var(--text-muted);
+}
+
+.btn-audio {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(0, 242, 254, 0.15);
+  border: 1px solid var(--accent-cyan);
+  color: var(--accent-cyan);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.btn-audio:hover {
+  background: var(--accent-cyan);
+  color: #07090e;
+  transform: scale(1.08);
+}
+
 .app-footer {
   text-align: center;
   margin-top: 3rem;

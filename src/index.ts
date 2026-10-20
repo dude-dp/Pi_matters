@@ -4,6 +4,7 @@ import { getPiHexDigits, hexToBinary, hexToAscii } from './bbp';
 import { scanHexForWords } from './matcher';
 import { getMeta, getDiscoveries, searchDiscoveries } from './db';
 import { runAutonomousMining, resolveDatabase, Bindings } from './mining';
+import { lookupWordDefinition } from './dictionary-client';
 
 const app = new Hono<{ Bindings: Bindings }>();
 
@@ -74,7 +75,15 @@ app.get('/api/inspect/:position', async (c) => {
   });
 });
 
-// 5. Trigger on-demand mining chunk
+// 5. Open-Source Wiktionary Definition Lookup with Edge D1 Caching
+app.get('/api/define/:word', async (c) => {
+  const db = resolveDatabase(c.env);
+  const word = c.req.param('word');
+  const definition = await lookupWordDefinition(db, word);
+  return c.json(definition);
+});
+
+// 6. Trigger on-demand mining chunk
 app.post('/api/mine', async (c) => {
   let batchSize = 160;
   try {

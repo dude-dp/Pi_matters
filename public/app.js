@@ -117,6 +117,18 @@
                 <div class="card-data-label">Binary Bits (4-bit per hex)</div>
                 <div class="card-data-val">${formatBinary(item.binary_snippet)}</div>
               </div>
+
+              <div class="card-actions">
+                <button class="btn-dict" data-word="${escapeHtml(item.word)}">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                  </svg>
+                  Wiktionary Definition
+                </button>
+              </div>
+
+              <div class="definition-drawer" id="def-${escapeHtml(item.word).replace(/\s+/g, '_')}"></div>
             </div>
           </div>
         `;
@@ -125,6 +137,72 @@
       console.warn('Failed to load discoveries:', err);
     }
   }
+
+  // Delegate clicks on Wiktionary Definition button
+  discoveriesContainer.addEventListener('click', async (e) => {
+    const btn = e.target.closest('.btn-dict');
+    if (!btn) {
+      const audioBtn = e.target.closest('.btn-audio');
+      if (audioBtn) {
+        const audioUrl = audioBtn.getAttribute('data-audio');
+        if (audioUrl) {
+          const snd = new Audio(audioUrl);
+          snd.play().catch(err => console.warn('Audio play error:', err));
+        }
+      }
+      return;
+    }
+
+    const word = btn.getAttribute('data-word');
+    if (!word) return;
+
+    const drawerId = `def-${escapeHtml(word).replace(/\s+/g, '_')}`;
+    const drawer = document.getElementById(drawerId);
+    if (!drawer) return;
+
+    if (drawer.classList.contains('open')) {
+      drawer.classList.remove('open');
+      btn.innerHTML = `
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+        </svg>
+        Wiktionary Definition
+      `;
+      return;
+    }
+
+    drawer.classList.add('open');
+    if (!drawer.innerHTML) {
+      drawer.innerHTML = `<span class="spinner" style="width:14px;height:14px;border-width:2px;display:inline-block;"></span> Querying Wiktionary...`;
+      try {
+        const res = await fetch(`/api/define/${encodeURIComponent(word)}`);
+        const def = await res.json();
+
+        drawer.innerHTML = `
+          <div class="def-top">
+            <div style="display:flex;align-items:center;gap:0.5rem;">
+              ${def.partOfSpeech ? `<span class="def-pos-tag">${escapeHtml(def.partOfSpeech)}</span>` : ''}
+              ${def.phonetic ? `<span class="def-phonetic">${escapeHtml(def.phonetic)}</span>` : ''}
+            </div>
+            ${def.audioUrl ? `
+              <button class="btn-audio" data-audio="${escapeHtml(def.audioUrl)}" title="Listen to pronunciation">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                  <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                </svg>
+              </button>
+            ` : ''}
+          </div>
+          <div class="def-body">${escapeHtml(def.definition || 'No definition found in Wiktionary.')}</div>
+          ${def.example ? `<div class="def-example">&ldquo;${escapeHtml(def.example)}&rdquo;</div>` : ''}
+        `;
+      } catch (err) {
+        drawer.innerHTML = `<div class="def-body" style="color:var(--text-muted);">Failed to retrieve definition.</div>`;
+      }
+    }
+    btn.textContent = 'Hide Definition';
+  });
 
   function formatBinary(bin) {
     if (!bin) return '';

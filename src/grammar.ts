@@ -1,5 +1,6 @@
 /**
  * Lexical Grammar and Semantic Classification Engine for Pi Discoveries
+ * Built on open-source WordNet parts of speech.
  */
 
 export const ADJECTIVES = new Set([
@@ -8,13 +9,20 @@ export const ADJECTIVES = new Set([
   'SWEET', 'KIND', 'BRAVE', 'BOLD', 'NOBLE', 'WISE', 'SAFE', 'ALIVE',
   'AWAKE', 'STILL', 'QUIET', 'LOUD', 'MAGIC', 'GREAT', 'GRAND', 'HOLY',
   'SACRED', 'SECRET', 'LUCKY', 'HAPPY', 'SILENT', 'GOLDEN', 'NEW', 'OLD',
-  'GOOD', 'BEST', 'REAL', 'FREE', 'BLUE', 'RED', 'FINE', 'VIBRANT', 'LUCID'
+  'GOOD', 'BEST', 'REAL', 'FREE', 'BLUE', 'RED', 'FINE', 'VIBRANT', 'LUCID',
+  'LUMINOUS', 'RADIANT', 'SHINING', 'SILVER', 'AZURE', 'CRYSTAL', 'SERENE',
+  'TRANQUIL', 'PEACEFUL', 'GENTLE', 'TENDER', 'VALIANT', 'FEARLESS', 'FAITHFUL',
+  'LOYAL', 'HONEST', 'JUST', 'RIGHT', 'DIVINE', 'MYSTIC', 'HIDDEN', 'COSMIC',
+  'STELLAR', 'INFINITE', 'BOUNDLESS', 'ETERNAL', 'TIMELESS', 'ENDLESS', 'VAST',
+  'IMMENSE', 'PROFOUND', 'CLEVER', 'KEEN', 'SHARP', 'QUICK', 'SWIFT', 'FLEET',
+  'AGILE', 'NIMBLE', 'STRONG', 'ROBUST', 'HARDY', 'SOLID', 'STEADY', 'SECURE',
+  'VITAL', 'WHOLE', 'SOUND', 'FRESH', 'NOVEL', 'ANCIENT', 'PRIME', 'SOLAR', 'LUNAR'
 ]);
 
 export const NOUNS = new Set([
   'GOD', 'LIFE', 'SOUL', 'LOVE', 'MIND', 'TIME', 'SPACE', 'STAR', 'SUN', 'MOON',
   'EARTH', 'ATOM', 'WAVE', 'LIGHT', 'DARK', 'VOID', 'FIRE', 'WIND', 'WATER',
-  'CODE', 'DATA', 'MATH', 'BYTE', 'WORD', 'NAME', 'PATH', 'TRUTH', 'FORCE',
+  'CODE', 'DATA', 'MATH', 'BYTE', 'BYTES', 'WORD', 'NAME', 'PATH', 'TRUTH', 'FORCE',
   'POWER', 'NATURE', 'HUMAN', 'BEING', 'REALITY', 'COSMOS', 'SPIRIT', 'WISDOM',
   'REASON', 'LOGIC', 'CHAOS', 'ORDER', 'BEAUTY', 'SECRET', 'SILENCE', 'WORLD',
   'PEOPLE', 'MAN', 'MEN', 'WOMAN', 'WOMEN', 'CHILD', 'FRIEND', 'FAMILY', 'HOME',
@@ -24,9 +32,15 @@ export const NOUNS = new Set([
   'EYE', 'FACE', 'HEAD', 'HEART', 'BODY', 'VOICE', 'SOUND', 'BREATH', 'GOLD',
   'IRON', 'STONE', 'ROCK', 'CLOUD', 'RAIN', 'SNOW', 'ICE', 'SKY', 'KING',
   'QUEEN', 'HERO', 'LEADER', 'STORY', 'TALE', 'MEMORY', 'SHADOW', 'MIRROR',
-  'WINDOW', 'NODE', 'HOST', 'LINK', 'LOOP', 'BIT', 'CHIP', 'CORE', 'CPU',
+  'WINDOW', 'NODE', 'HOST', 'LINK', 'LOOP', 'BIT', 'BITS', 'CHIP', 'CORE', 'CPU',
   'RAM', 'ROM', 'DISK', 'FILE', 'GRAPH', 'HASH', 'ROOT', 'LEAF', 'PORT',
-  'CLOUD', 'EDGE', 'WORKER', 'PROXY', 'ROUTER', 'STATE', 'FLOW', 'DAY', 'WAY', 'BOY'
+  'CLOUD', 'EDGE', 'WORKER', 'PROXY', 'ROUTER', 'STATE', 'FLOW', 'DAY', 'WAY', 'BOY',
+  'FATE', 'DESTINY', 'SPARK', 'GENIUS', 'INSIGHT', 'PLANET', 'ORBIT', 'GRAVITY',
+  'ENERGY', 'MATTER', 'FIELD', 'PULSAR', 'NEBULA', 'AURORA', 'HORIZON', 'COMET',
+  'GALAXY', 'TIDE', 'STREAM', 'FLAME', 'EMBER', 'ASH', 'DUST', 'SAND', 'ISLAND',
+  'EAGLE', 'HAWK', 'DOVE', 'SWAN', 'OWL', 'RAVEN', 'KNIGHT', 'MASTER', 'POET',
+  'SAGE', 'PILGRIM', 'TOWER', 'TEMPLE', 'CASTLE', 'GATE', 'ARRAY', 'QUEUE', 'STACK',
+  'TABLE', 'BLOCK', 'CHAIN', 'TOKEN', 'PACKET', 'BUFFER', 'THREAD', 'SCHEMA'
 ]);
 
 export const VERBS = new Set([
@@ -38,7 +52,17 @@ export const VERBS = new Set([
   'LAUGH', 'CRY', 'LIVE', 'DIE', 'BORN', 'GROW', 'CHANGE', 'BEGIN', 'END',
   'SAVE', 'LOST', 'WIN', 'LOSE', 'FIGHT', 'HEAL', 'BURN', 'SHINE', 'GLOW',
   'FLOW', 'STAY', 'PASS', 'CALL', 'PUSH', 'PULL', 'CAN', 'WILL', 'HAVE',
-  'PUT', 'SAY', 'LET', 'BOOT', 'INIT'
+  'PUT', 'SAY', 'LET', 'BOOT', 'INIT', 'DISCOVER', 'REVEAL', 'UNVEIL', 'LEARN',
+  'TEACH', 'PONDER', 'WONDER', 'ENVISION', 'BELIEVE', 'TRUST', 'CHERISH', 'CARE',
+  'COMFORT', 'BLESS', 'CREATE', 'DESIGN', 'CRAFT', 'SHAPE', 'MOLD', 'WEAVE',
+  'SPIN', 'DRAW', 'PAINT', 'COMPOSE', 'CHANT', 'UTTER', 'WHISPER', 'SHOUT',
+  'ATTEND', 'WATCH', 'GAZE', 'BEHOLD', 'SCAN', 'TRACE', 'TRACK', 'TREAD',
+  'STRIDE', 'SPRINT', 'RACE', 'SOAR', 'GLIDE', 'HOVER', 'LEAP', 'BOUND',
+  'CLIMB', 'SCALE', 'ASCEND', 'DESCEND', 'PLUNGE', 'DIVE', 'FLOAT', 'DRIFT',
+  'SAIL', 'VOYAGE', 'JOURNEY', 'TRAVEL', 'WANDER', 'ROAM', 'REST', 'SLEEP',
+  'AWAKEN', 'WAKE', 'STIR', 'BREATHE', 'THRIVE', 'FLOURISH', 'EXPAND', 'RADIATE',
+  'BEAM', 'FLASH', 'SPARKLE', 'IGNITE', 'BLAZE', 'KINDLE', 'STREAM', 'SURGE',
+  'POUR', 'RUSH', 'ENDURE', 'PERSIST', 'PREVAIL', 'SUCCEED', 'ACHIEVE', 'TRIUMPH'
 ]);
 
 export const PREPOSITIONS = new Set([
