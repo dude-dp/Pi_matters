@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import worker, { runAutonomousMining } from '../src/index';
+import worker from '../src/index';
+import { runAutonomousMining } from '../src/mining';
 
 describe('Hono API & Worker Autonomous Mining', () => {
   it('mines a batch of Pi digits autonomously', async () => {
