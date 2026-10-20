@@ -69,6 +69,65 @@
       </div>
     </section>
 
+    <!-- Turbo Swarm Client Miner HUD -->
+    <section class="miner-section">
+      <div class="miner-card">
+        <div class="miner-header">
+          <div class="miner-title-wrap">
+            <div class="miner-icon-glow">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+              </svg>
+            </div>
+            <div>
+              <h2 class="miner-title">Collaborative Turbo Swarm Miner</h2>
+              <p class="miner-desc">Accelerate Pi discovery using client-side HTML5 Web Workers with cryptographic spot-checking.</p>
+            </div>
+          </div>
+          <div class="miner-switch-wrap">
+            <label class="switch-label" for="toggle-turbo-miner">
+              <span class="switch-status" id="miner-switch-status">STANDBY (OFF)</span>
+              <div class="toggle-switch">
+                <input type="checkbox" id="toggle-turbo-miner">
+                <span class="toggle-slider"></span>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div class="miner-body">
+          <div class="miner-metrics-grid">
+            <div class="miner-metric">
+              <span class="miner-metric-label">Client Hashrate</span>
+              <div class="miner-metric-val mono accent-green" id="miner-speedometer">0 <span class="unit">digits/s</span></div>
+              <span class="miner-metric-hint" id="miner-thread-hint">Dedicated Web Worker Thread</span>
+            </div>
+            <div class="miner-metric">
+              <span class="miner-metric-label">Session Digits Contributed</span>
+              <div class="miner-metric-val mono accent-cyan" id="miner-session-digits">0</div>
+              <span class="miner-metric-hint">Leased &amp; Committed to D1</span>
+            </div>
+            <div class="miner-metric">
+              <span class="miner-metric-label">Words &amp; Phrases Unearthed</span>
+              <div class="miner-metric-val mono accent-gold" id="miner-session-words">0</div>
+              <span class="miner-metric-hint" id="miner-last-discovery">Awaiting next batch</span>
+            </div>
+          </div>
+
+          <!-- Active Lease Progress Bar -->
+          <div class="miner-progress-wrap">
+            <div class="miner-progress-meta">
+              <span id="miner-progress-label">Active Block: Idle</span>
+              <span class="mono" id="miner-progress-percent">0%</span>
+            </div>
+            <div class="miner-progress-track">
+              <div class="miner-progress-fill" id="miner-progress-bar" style="width: 0%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- Formula & Explainer Banner -->
     <section class="formula-banner">
       <div class="formula-inner">
@@ -178,6 +237,9 @@
   <footer class="app-footer">
     <p>Pi Matters &middot; Crafted with Hono, Cloudflare Workers Free Tier, D1 &amp; Vanilla Web Standards.</p>
   </footer>
+
+  <!-- Toast Notification Container for Live Discoveries -->
+  <div class="toast-container" id="toast-container"></div>
 
   <script src="app.js"></script>
 </body>

@@ -32,6 +32,19 @@
   const btnClearSearch = document.getElementById('btn-clear-search');
   const filterChips = document.querySelectorAll('.chip');
 
+  // Miner HUD DOM Elements
+  const toggleTurboMiner = document.getElementById('toggle-turbo-miner');
+  const minerSwitchStatus = document.getElementById('miner-switch-status');
+  const minerSpeedometer = document.getElementById('miner-speedometer');
+  const minerSessionDigits = document.getElementById('miner-session-digits');
+  const minerSessionWords = document.getElementById('miner-session-words');
+  const minerLastDiscovery = document.getElementById('miner-last-discovery');
+  const minerProgressBar = document.getElementById('miner-progress-bar');
+  const minerProgressLabel = document.getElementById('miner-progress-label');
+  const minerProgressPercent = document.getElementById('miner-progress-percent');
+  const minerCard = document.querySelector('.miner-card');
+  const toastContainer = document.getElementById('toast-container');
+
   // Format numbers with commas
   function formatNum(n) {
     return new Intl.NumberFormat().format(n || 0);
@@ -334,6 +347,105 @@
     btnClearSearch.style.display = 'none';
     loadDiscoveries();
   });
+
+  // ---------------- Turbo Swarm Web Worker Miner ---------------- //
+  let minerWorker = null;
+
+  function showToast(word, label, rarityTier, digitStart, digitEnd) {
+    if (!toastContainer) return;
+    const toast = document.createElement('div');
+    const rarityLower = (rarityTier || 'common').toLowerCase();
+    toast.className = `toast toast-${rarityLower}`;
+
+    const icon = rarityTier === 'MYTHIC' ? '🌟' : (rarityTier === 'EPIC' ? '✨' : '💎');
+    toast.innerHTML = `
+      <div class="toast-icon">${icon}</div>
+      <div class="toast-content">
+        <div class="toast-title">${escapeHtml(word)} (${rarityTier || 'COMMON'})</div>
+        <div class="toast-desc">${escapeHtml(label || 'Word')} unearthed at digits [${formatNum(digitStart)} &ndash; ${formatNum(digitEnd)}]</div>
+      </div>
+    `;
+    toastContainer.appendChild(toast);
+
+    setTimeout(() => {
+      toast.style.animation = 'toast-fade-out 0.35s forwards';
+      setTimeout(() => toast.remove(), 350);
+    }, 4500);
+  }
+
+  function initMinerWorker() {
+    if (minerWorker) return minerWorker;
+
+    minerWorker = new Worker('miner.worker.js');
+
+    minerWorker.onmessage = (e) => {
+      const data = e.data || {};
+
+      if (data.type === 'PROGRESS') {
+        if (minerSpeedometer) {
+          minerSpeedometer.innerHTML = `${formatNum(data.digitsPerSec)} <span class="unit">digits/s</span>`;
+        }
+        if (minerSessionDigits) {
+          minerSessionDigits.textContent = formatNum(data.sessionDigitsMined);
+        }
+        if (minerSessionWords) {
+          minerSessionWords.textContent = formatNum(data.sessionWordsFound);
+        }
+        if (minerProgressLabel) {
+          minerProgressLabel.innerHTML = `Lease [${formatNum(data.startDigit)} &ndash; ${formatNum(data.startDigit + data.blockSize)}]`;
+        }
+        if (minerProgressBar) {
+          minerProgressBar.style.width = '100%';
+        }
+        if (minerProgressPercent) {
+          minerProgressPercent.textContent = '100%';
+        }
+
+        setTimeout(() => {
+          if (toggleTurboMiner && toggleTurboMiner.checked && minerProgressBar) {
+            minerProgressBar.style.width = '0%';
+            minerProgressPercent.textContent = 'Computing...';
+          }
+        }, 120);
+      } else if (data.type === 'COMMITTED') {
+        loadStats();
+        if (Array.isArray(data.matches) && data.matches.length > 0) {
+          for (const m of data.matches) {
+            showToast(m.word, m.phraseLabel, m.rarityTier, m.digitStart, m.digitEnd);
+            if (minerLastDiscovery) {
+              minerLastDiscovery.textContent = `Found: ${m.word} (${m.rarityTier})`;
+            }
+          }
+          loadDiscoveries();
+        }
+      } else if (data.type === 'STATUS') {
+        if (data.status === 'MINING') {
+          if (minerCard) minerCard.classList.add('mining-active');
+          if (minerSwitchStatus) minerSwitchStatus.textContent = 'TURBO MINING (ACTIVE)';
+        } else {
+          if (minerCard) minerCard.classList.remove('mining-active');
+          if (minerSwitchStatus) minerSwitchStatus.textContent = 'STANDBY (OFF)';
+          if (minerSpeedometer) minerSpeedometer.innerHTML = `0 <span class="unit">digits/s</span>`;
+          if (minerProgressBar) minerProgressBar.style.width = '0%';
+          if (minerProgressLabel) minerProgressLabel.textContent = 'Active Block: Idle';
+          if (minerProgressPercent) minerProgressPercent.textContent = '0%';
+        }
+      }
+    };
+
+    return minerWorker;
+  }
+
+  if (toggleTurboMiner) {
+    toggleTurboMiner.addEventListener('change', () => {
+      const worker = initMinerWorker();
+      if (toggleTurboMiner.checked) {
+        worker.postMessage({ type: 'START', leaseSize: 500 });
+      } else {
+        worker.postMessage({ type: 'STOP' });
+      }
+    });
+  }
 
   // Initial Load
   loadStats();
