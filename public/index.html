@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pi Matters · The Autonomous Library of Pi</title>
+  <meta name="description" content="Autonomous mining of Base-16 Bailey-Borwein-Plouffe digits of Pi into binary and natural language on Cloudflare Workers.">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="ambient-glow glow-1"></div>
+  <div class="ambient-glow glow-2"></div>
+  <div class="ambient-glow glow-3"></div>
+
+  <div class="app-container">
+    <!-- Navigation / Top Header -->
+    <header class="main-header">
+      <div class="brand">
+        <div class="pi-symbol-badge">π</div>
+        <div>
+          <h1 class="brand-title">Pi Matters</h1>
+          <p class="brand-subtitle">Autonomous BBP Base-16 &middot; Binary &middot; Natural Language Discovery</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <div class="status-indicator" id="worker-status-badge">
+          <span class="pulsing-dot"></span>
+          <span class="status-text">Worker Autonomous</span>
+        </div>
+        <button id="btn-mine-chunk" class="btn btn-primary" title="Trigger an immediate extraction chunk">
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+          </svg>
+          Mine Chunk Now
+        </button>
+      </div>
+    </header>
+
+    <!-- Telemetry Cards -->
+    <section class="telemetry-grid">
+      <div class="metric-card" id="card-cursor">
+        <div class="metric-label">Global π Cursor</div>
+        <div class="metric-value" id="val-cursor">0</div>
+        <div class="metric-footnote">Fractional Hex Digit Position</div>
+      </div>
+      <div class="metric-card" id="card-processed">
+        <div class="metric-label">Digits Processed</div>
+        <div class="metric-value" id="val-processed">0</div>
+        <div class="metric-footnote">Extracted via BBP Spigot</div>
+      </div>
+      <div class="metric-card" id="card-words">
+        <div class="metric-label">Words Discovered</div>
+        <div class="metric-value accent-gold" id="val-words">0</div>
+        <div class="metric-footnote">Linguistic English Matches</div>
+      </div>
+      <div class="metric-card" id="card-cadence">
+        <div class="metric-label">Cloudflare Cadence</div>
+        <div class="metric-value accent-cyan" id="val-cadence">Every 5m</div>
+        <div class="metric-footnote" id="val-last-run">Waiting for next run</div>
+      </div>
+    </section>
+
+    <!-- Formula & Explainer Banner -->
+    <section class="formula-banner">
+      <div class="formula-inner">
+        <div class="formula-math">
+          $$\pi = \sum_{k=0}^{\infty} \frac{1}{16^k} \left( \frac{4}{8k+1} - \frac{2}{8k+4} - \frac{1}{8k+5} - \frac{1}{8k+6} \right)$$
+        </div>
+        <div class="formula-text">
+          <strong>The Bailey–Borwein–Plouffe (BBP) Engine:</strong> Computes the $n$-th base-16 digit directly without prior calculations. Each hex digit translates into 4 bits; consecutive bytes form ASCII strings that are autonomously mined for readable language.
+        </div>
+      </div>
+    </section>
+
+    <!-- Live Stream Matrix Inspector -->
+    <section class="inspector-section">
+      <div class="section-header">
+        <div class="section-title-wrap">
+          <h2 class="section-title">Tri-Layer Pi Stream Matrix</h2>
+          <span class="section-badge">Live Hex &rarr; Binary &rarr; ASCII</span>
+        </div>
+        <div class="stream-controls">
+          <div class="input-group">
+            <label for="input-seek-pos">Digit Offset:</label>
+            <input type="number" id="input-seek-pos" min="0" value="0" step="16">
+          </div>
+          <button id="btn-seek" class="btn btn-secondary">Jump</button>
+          <button id="btn-step-prev" class="btn btn-icon-only" title="Previous 64 digits">&larr;</button>
+          <button id="btn-step-next" class="btn btn-icon-only" title="Next 64 digits">&rarr;</button>
+          <button id="btn-toggle-auto" class="btn btn-outline">Auto Stream</button>
+        </div>
+      </div>
+
+      <div class="matrix-card">
+        <!-- Layer 1: Hex -->
+        <div class="matrix-row">
+          <div class="matrix-label">
+            <span class="layer-tag hex-tag">HEX (Base-16)</span>
+            <span class="range-indicator" id="hex-range">Digits 0 - 64</span>
+          </div>
+          <div class="matrix-display mono" id="matrix-hex">
+            Loading π stream...
+          </div>
+        </div>
+
+        <!-- Layer 2: Binary -->
+        <div class="matrix-row">
+          <div class="matrix-label">
+            <span class="layer-tag bin-tag">BINARY (4-bit per hex)</span>
+            <span class="range-indicator" id="bin-range">256 Bits</span>
+          </div>
+          <div class="matrix-display mono binary-display" id="matrix-binary">
+            Loading binary bits...
+          </div>
+        </div>
+
+        <!-- Layer 3: ASCII Decoded -->
+        <div class="matrix-row">
+          <div class="matrix-label">
+            <span class="layer-tag ascii-tag">ASCII DECODED</span>
+            <span class="range-indicator">8-bit Character Stream</span>
+          </div>
+          <div class="matrix-display mono ascii-display" id="matrix-ascii">
+            Loading ASCII...
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Discovered Words Gallery -->
+    <section class="discoveries-section">
+      <div class="section-header">
+        <div class="section-title-wrap">
+          <h2 class="section-title">The Library of Pi &middot; Discoveries</h2>
+          <span class="section-badge" id="badge-discovery-count">0 Words</span>
+        </div>
+        <div class="search-box">
+          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" id="input-search" placeholder="Search discoveries (e.g. LIFE, CODE, MIND)..." autocomplete="off">
+          <button id="btn-clear-search" class="btn-clear" style="display:none;">&times;</button>
+        </div>
+      </div>
+
+      <div class="discoveries-grid" id="discoveries-container">
+        <div class="empty-state">
+          <div class="spinner"></div>
+          <p>Scanning the infinite decimals of Pi...</p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <footer class="app-footer">
+    <p>Pi Matters &middot; Crafted with Hono, Cloudflare Workers Free Tier, D1 &amp; Vanilla Web Standards.</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

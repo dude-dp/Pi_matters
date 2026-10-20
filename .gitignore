@@ -1,0 +1,8 @@
+node_modules/
+.wrangler/
+dist/
+.env
+.DS_Store
+firststeps.md
+pi_matter_outline.md
+pi_matter.code-workspace
