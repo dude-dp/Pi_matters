@@ -1,9 +1,24 @@
 import { describe, it, expect } from 'vitest';
 import { classifyPhrase } from '../src/grammar';
 import { scanHexForWords } from '../src/matcher';
-import { hexToAscii } from '../src/bbp';
+import { charToFiveBit } from '../src/bbp';
 
-describe('Semantic Grammar & Multi-word Phrase Stitcher', () => {
+function stringTo5BitHex(str: string): string {
+  let bin = '';
+  for (const ch of str) {
+    bin += charToFiveBit(ch);
+  }
+  while (bin.length % 4 !== 0) {
+    bin += '0';
+  }
+  let hex = '';
+  for (let i = 0; i < bin.length; i += 4) {
+    hex += parseInt(bin.slice(i, i + 4), 2).toString(16).toUpperCase();
+  }
+  return hex;
+}
+
+describe('Semantic Grammar & Multi-word Phrase Stitcher (5-Bit Alphabet)', () => {
   it('classifies Adjective + Noun combinations', () => {
     const res = classifyPhrase(['TRUE', 'LOVE']);
     expect(res.isPhrase).toBe(true);
@@ -32,12 +47,10 @@ describe('Semantic Grammar & Multi-word Phrase Stitcher', () => {
     expect(res.rarityTier).toBe('MYTHIC');
   });
 
-  it('detects multi-word phrases from a raw hex stream with spaces or adjacent words', () => {
-    // "TRUE LOVE" in ASCII:
-    // T(54) R(52) U(55) E(45) Space(20) L(4C) O(4F) V(56) E(45)
-    // Hex: 54525545204C4F5645
-    const fakeHex = '0011' + '54525545204C4F5645' + '2233';
-    const matches = scanHexForWords(fakeHex, 0, { detectPhrases: true });
+  it('detects multi-word phrases from a 5-bit natural alphabet stream with spaces', () => {
+    // "TRUE LOVE" with 5-bit space
+    const phraseHex = stringTo5BitHex('TRUE LOVE');
+    const matches = scanHexForWords(phraseHex, 0, { detectPhrases: true });
 
     const phrase = matches.find(m => m.word === 'TRUE LOVE');
     expect(phrase).toBeDefined();
@@ -45,5 +58,6 @@ describe('Semantic Grammar & Multi-word Phrase Stitcher', () => {
     expect(phrase?.phraseType).toBe('ADJ_NOUN');
     expect(phrase?.rarityTier).toBe('EPIC');
     expect(phrase?.wordCount).toBe(2);
+    expect(phrase?.encoding).toBe('5-BIT');
   });
 });

@@ -1,27 +1,47 @@
 import { describe, it, expect } from 'vitest';
 import { scanHexForWords } from '../src/matcher';
-import { getPiHexDigits } from '../src/bbp';
+import { getPiHexDigits, charToFiveBit } from '../src/bbp';
 
-describe('Linguistic Matcher & Word Discovery', () => {
-  it('detects a known word from a raw hex string', () => {
-    // ASCII for "LOVE": 'L' (4C), 'O' (4F), 'V' (56), 'E' (45)
-    // Hex: 4C4F5645
-    const fakeHex = '0011224C4F56453344';
-    const matches = scanHexForWords(fakeHex, 100);
+function stringTo5BitHex(str: string): string {
+  let bin = '';
+  for (const ch of str) {
+    bin += charToFiveBit(ch);
+  }
+  while (bin.length % 4 !== 0) {
+    bin += '0';
+  }
+  let hex = '';
+  for (let i = 0; i < bin.length; i += 4) {
+    hex += parseInt(bin.slice(i, i + 4), 2).toString(16).toUpperCase();
+  }
+  return hex;
+}
+
+describe('Linguistic Matcher & Word Discovery (5-Bit Alphabet)', () => {
+  it('detects a known 5-bit encoded word from hex', () => {
+    // Encode "LOVE" into 5-bit hex
+    const loveHex = stringTo5BitHex('LOVE');
+    const matches = scanHexForWords(loveHex, 0);
 
     const loveMatch = matches.find(m => m.word === 'LOVE');
     expect(loveMatch).toBeDefined();
     expect(loveMatch?.word).toBe('LOVE');
-    expect(loveMatch?.digitStart).toBe(106); // 6 hex digits before '4C4F5645' (3 bytes)
+    expect(loveMatch?.encoding).toBe('5-BIT');
   });
 
-  it('detects words across bit shifts', () => {
-    // "SUN": S=0x53, U=0x55, N=0x4E
-    // In binary: 01010011 01010101 01001110
-    // If we shift it right by 1 bit (prefix 1 zero):
-    // 00101001 10101010 10100111 00000000 -> Hex: 29AA A700
-    const shiftedHex = '29AAA700';
-    const matches = scanHexForWords(shiftedHex, 0, { checkBitShifts: true });
+  it('detects 5-bit words across bit shifts', () => {
+    // "SUN" with 1 bit prefix
+    let bin = '0'; // 1 bit offset
+    for (const ch of 'SUN') {
+      bin += charToFiveBit(ch);
+    }
+    while (bin.length % 4 !== 0) bin += '0';
+    let hex = '';
+    for (let i = 0; i < bin.length; i += 4) {
+      hex += parseInt(bin.slice(i, i + 4), 2).toString(16).toUpperCase();
+    }
+
+    const matches = scanHexForWords(hex, 0, { checkBitShifts: true });
     const sunMatch = matches.find(m => m.word === 'SUN');
     expect(sunMatch).toBeDefined();
     expect(sunMatch?.bitOffset).toBe(1);
@@ -31,6 +51,5 @@ describe('Linguistic Matcher & Word Discovery', () => {
     const piHex = getPiHexDigits(0, 120);
     const matches = scanHexForWords(piHex, 0);
     expect(Array.isArray(matches)).toBe(true);
-    // Even if no long word occurs in the first 120 digits, it should execute smoothly
   });
 });

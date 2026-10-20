@@ -1,4 +1,4 @@
-import { hexToBinary } from './bbp';
+import { hexToBinary, fiveBitToChar } from './bbp';
 import { DICTIONARY_SET } from './dictionary';
 import { classifyPhrase, PhraseType, RarityTier } from './grammar';
 
@@ -16,6 +16,7 @@ export interface DiscoveredMatch {
   phraseLabel: string;
   rarityTier: RarityTier;
   wordCount: number;
+  encoding: '5-BIT';
 }
 
 interface DetectedToken {
@@ -27,8 +28,10 @@ interface DetectedToken {
 }
 
 /**
- * Searches for valid English dictionary words and multi-word semantic phrases inside
- * a hexadecimal stream of Pi digits across multiple bit alignment offsets (0 to 7).
+ * High-Density 5-Bit Natural Alphabet Word & Phrase Scanner
+ * 
+ * Maps 5 bits to A-Z (1-26) with 0 and 31 as Space/Delimiters.
+ * Scans all 5 bit-alignment shifts (0, 1, 2, 3, 4) for maximum linguistic density.
  * 
  * @param hex The hexadecimal string segment of Pi
  * @param startDigitIndex The 0-based global fractional digit index in Pi
@@ -48,30 +51,24 @@ export function scanHexForWords(
   const maxLength = options.maxLength ?? 12;
   const checkBitShifts = options.checkBitShifts ?? true;
   const detectPhrases = options.detectPhrases ?? true;
-  const bitShifts = checkBitShifts ? [0, 1, 2, 3, 4, 5, 6, 7] : [0];
+  
+  // 5 possible bit shifts for 5-bit block alignment
+  const bitShifts = checkBitShifts ? [0, 1, 2, 3, 4] : [0];
 
   const binary = hexToBinary(hex);
   const matches: DiscoveredMatch[] = [];
   const seenKeys = new Set<string>();
 
   for (const bitOffset of bitShifts) {
-    // Decode bits into characters at this bitOffset
-    const chars: { char: string; byteIndex: number; bitPos: number }[] = [];
-    for (let b = bitOffset; b + 8 <= binary.length; b += 8) {
-      const byteVal = parseInt(binary.slice(b, b + 8), 2);
-      if (byteVal >= 32 && byteVal <= 126) {
-        chars.push({
-          char: String.fromCharCode(byteVal),
-          byteIndex: chars.length,
-          bitPos: b
-        });
-      } else {
-        chars.push({
-          char: '·',
-          byteIndex: chars.length,
-          bitPos: b
-        });
-      }
+    // Decode bits into 5-bit characters at this bitOffset
+    const chars: { char: string; index: number; bitPos: number }[] = [];
+    for (let b = bitOffset; b + 5 <= binary.length; b += 5) {
+      const val = parseInt(binary.slice(b, b + 5), 2);
+      chars.push({
+        char: fiveBitToChar(val),
+        index: chars.length,
+        bitPos: b
+      });
     }
 
     const fullString = chars.map(c => c.char).join('');
@@ -82,11 +79,12 @@ export function scanHexForWords(
       for (let i = 0; i + len <= fullString.length; i++) {
         const candidate = fullString.slice(i, i + len).toUpperCase();
 
+        // Must be purely alphabetic (A-Z)
         if (!/^[A-Z]+$/.test(candidate)) continue;
 
         if (DICTIONARY_SET.has(candidate)) {
           const startBit = chars[i].bitPos;
-          const endBit = chars[i + len - 1].bitPos + 8;
+          const endBit = chars[i + len - 1].bitPos + 5;
 
           tokensAtOffset.push({
             word: candidate,
@@ -106,10 +104,10 @@ export function scanHexForWords(
             const localHexStart = Math.max(0, Math.floor(startBit / 4) - 4);
             const localHexEnd = Math.min(hex.length, Math.ceil(endBit / 4) + 4);
             const hexSnippet = hex.slice(localHexStart, localHexEnd);
-            const binarySnippet = binary.slice(Math.max(0, startBit - 8), Math.min(binary.length, endBit + 8));
+            const binarySnippet = binary.slice(Math.max(0, startBit - 5), Math.min(binary.length, endBit + 5));
 
-            const asciiContextStart = Math.max(0, i - 2);
-            const asciiContextEnd = Math.min(fullString.length, i + len + 2);
+            const asciiContextStart = Math.max(0, i - 3);
+            const asciiContextEnd = Math.min(fullString.length, i + len + 3);
             const decodedAscii = fullString.slice(asciiContextStart, asciiContextEnd);
 
             const classification = classifyPhrase([candidate]);
@@ -127,7 +125,8 @@ export function scanHexForWords(
               phraseType: 'WORD',
               phraseLabel: classification.label,
               rarityTier: classification.rarityTier,
-              wordCount: 1
+              wordCount: 1,
+              encoding: '5-BIT'
             });
           }
         }
@@ -136,23 +135,20 @@ export function scanHexForWords(
 
     // 2. Multi-word Semantic Phrase Stitcher (Bigrams & Trigrams)
     if (detectPhrases && tokensAtOffset.length >= 2) {
-      // Sort tokens by start position
       const sortedTokens = [...tokensAtOffset].sort((a, b) => a.charStart - b.charStart || a.charEnd - b.charEnd);
 
       for (let i = 0; i < sortedTokens.length; i++) {
         const t1 = sortedTokens[i];
 
-        // Look for adjacent or space-separated second word
         for (let j = i + 1; j < sortedTokens.length; j++) {
           const t2 = sortedTokens[j];
 
-          // Check if t2 immediately follows t1 (adjacent or separated by a single space/delimiter)
           const charGap = t2.charStart - t1.charEnd;
           if (charGap < 0) continue; // overlapping tokens
           if (charGap > 1) break; // too far apart
 
-          // Verify delimiter if gap == 1 (must be space or delimiter)
-          if (charGap === 1 && fullString[t1.charEnd] !== ' ' && fullString[t1.charEnd] !== '·') {
+          // In 5-bit encoding, gap == 1 must be a space or punctuation delimiter
+          if (charGap === 1 && fullString[t1.charEnd] !== ' ' && fullString[t1.charEnd] !== ',' && fullString[t1.charEnd] !== '.') {
             continue;
           }
 
@@ -172,10 +168,10 @@ export function scanHexForWords(
             const localHexStart = Math.max(0, Math.floor(startBit / 4) - 4);
             const localHexEnd = Math.min(hex.length, Math.ceil(endBit / 4) + 4);
             const hexSnippet = hex.slice(localHexStart, localHexEnd);
-            const binarySnippet = binary.slice(Math.max(0, startBit - 8), Math.min(binary.length, endBit + 8));
+            const binarySnippet = binary.slice(Math.max(0, startBit - 5), Math.min(binary.length, endBit + 5));
 
-            const asciiContextStart = Math.max(0, t1.charStart - 2);
-            const asciiContextEnd = Math.min(fullString.length, t2.charEnd + 2);
+            const asciiContextStart = Math.max(0, t1.charStart - 3);
+            const asciiContextEnd = Math.min(fullString.length, t2.charEnd + 3);
             const decodedAscii = fullString.slice(asciiContextStart, asciiContextEnd);
 
             matches.push({
@@ -191,11 +187,12 @@ export function scanHexForWords(
               phraseType: classification.phraseType,
               phraseLabel: classification.label,
               rarityTier: classification.rarityTier,
-              wordCount: 2
+              wordCount: 2,
+              encoding: '5-BIT'
             });
           }
 
-          // Look for 3rd word (Trigram)
+          // Trigram: 3 consecutive words
           for (let k = j + 1; k < sortedTokens.length; k++) {
             const t3 = sortedTokens[k];
             const gap3 = t3.charStart - t2.charEnd;
@@ -218,10 +215,10 @@ export function scanHexForWords(
               const localHexStart = Math.max(0, Math.floor(triStartBit / 4) - 4);
               const localHexEnd = Math.min(hex.length, Math.ceil(triEndBit / 4) + 4);
               const hexSnippet = hex.slice(localHexStart, localHexEnd);
-              const binarySnippet = binary.slice(Math.max(0, triStartBit - 8), Math.min(binary.length, triEndBit + 8));
+              const binarySnippet = binary.slice(Math.max(0, triStartBit - 5), Math.min(binary.length, triEndBit + 5));
 
-              const asciiContextStart = Math.max(0, t1.charStart - 2);
-              const asciiContextEnd = Math.min(fullString.length, t3.charEnd + 2);
+              const asciiContextStart = Math.max(0, t1.charStart - 3);
+              const asciiContextEnd = Math.min(fullString.length, t3.charEnd + 3);
               const decodedAscii = fullString.slice(asciiContextStart, asciiContextEnd);
 
               matches.push({
@@ -237,7 +234,8 @@ export function scanHexForWords(
                 phraseType: triClass.phraseType,
                 phraseLabel: triClass.label,
                 rarityTier: triClass.rarityTier,
-                wordCount: 3
+                wordCount: 3,
+                encoding: '5-BIT'
               });
             }
           }

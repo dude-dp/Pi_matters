@@ -168,3 +168,59 @@ export function binaryStreamToAscii(binary: string, bitOffset = 0): string {
   }
   return result;
 }
+
+/**
+ * Maps a 5-bit integer (0-31) to the natural alphabet:
+ * 0, 31 -> ' ' (Space / Delimiter)
+ * 1..26 -> 'A'..'Z'
+ * 27 -> '.'
+ * 28 -> ','
+ * 29 -> '!'
+ * 30 -> '?'
+ */
+export function fiveBitToChar(val: number): string {
+  if (val === 0 || val === 31) return ' ';
+  if (val >= 1 && val <= 26) return String.fromCharCode(64 + val); // 1 = 'A' (65)
+  if (val === 27) return '.';
+  if (val === 28) return ',';
+  if (val === 29) return '!';
+  if (val === 30) return '?';
+  return ' ';
+}
+
+/**
+ * Converts a 5-bit character to its 5-bit binary string (e.g. 'A' -> '00001')
+ */
+export function charToFiveBit(char: string): string {
+  const c = char.toUpperCase();
+  let val = 0;
+  if (c >= 'A' && c <= 'Z') {
+    val = c.charCodeAt(0) - 64;
+  } else if (c === '.') val = 27;
+  else if (c === ',') val = 28;
+  else if (c === '!') val = 29;
+  else if (c === '?') val = 30;
+  else val = 0;
+  return val.toString(2).padStart(5, '0');
+}
+
+/**
+ * Decodes 5-bit chunks from a binary stream into Natural Alphabet text.
+ */
+export function binaryStreamTo5BitText(binary: string, bitOffset = 0): string {
+  let result = '';
+  for (let i = bitOffset; i + 5 <= binary.length; i += 5) {
+    const val = parseInt(binary.slice(i, i + 5), 2);
+    result += fiveBitToChar(val);
+  }
+  return result;
+}
+
+/**
+ * Converts hexadecimal digits of Pi directly into 5-Bit Natural Alphabet text.
+ */
+export function hexTo5BitText(hex: string, bitOffset = 0): string {
+  const binary = hexToBinary(hex);
+  return binaryStreamTo5BitText(binary, bitOffset);
+}
+

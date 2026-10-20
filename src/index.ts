@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
-import { getPiHexDigits, hexToBinary, hexToAscii } from './bbp';
+import { getPiHexDigits, hexToBinary, hexToAscii, binaryStreamTo5BitText } from './bbp';
 import { scanHexForWords } from './matcher';
 import { getMeta, getDiscoveries, searchDiscoveries } from './db';
 import { runAutonomousMining, resolveDatabase, Bindings } from './mining';
@@ -28,8 +28,8 @@ app.get('/api/stats', async (c) => {
     totalWords,
     totalPhrases,
     lastRunAt,
-    uptime: 'Autonomous (Cloudflare Workers Cron)',
-    algorithm: 'Bailey–Borwein–Plouffe (BBP Base-16)'
+    uptime: 'Autonomous (Cloudflare Workers Cron 1m)',
+    algorithm: 'Bailey–Borwein–Plouffe (5-Bit Natural Alphabet A=1..Z=26)'
   });
 });
 
@@ -62,6 +62,7 @@ app.get('/api/inspect/:position', async (c) => {
 
   const hex = getPiHexDigits(position, count);
   const binary = hexToBinary(hex);
+  const text5Bit = binaryStreamTo5BitText(binary, 0);
   const ascii = hexToAscii(hex, { replaceNonPrintable: true });
   const detected = scanHexForWords(hex, position, { detectPhrases: true });
 
@@ -70,7 +71,9 @@ app.get('/api/inspect/:position', async (c) => {
     count,
     hex,
     binary,
-    ascii: ascii.printable,
+    text5Bit,
+    ascii: text5Bit, // primary natural alphabet stream
+    rawAscii: ascii.printable,
     detectedWords: detected
   });
 });

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getPiHexDigit, getPiHexDigits, hexToBinary, hexToAscii, binaryStreamToAscii, modPow } from '../src/bbp';
+import { getPiHexDigit, getPiHexDigits, hexToBinary, hexToAscii, binaryStreamToAscii, modPow, fiveBitToChar, charToFiveBit, binaryStreamTo5BitText } from '../src/bbp';
 
 describe('BBP Formula & Hexadecimal Extractor', () => {
   it('correctly calculates modPow', () => {
@@ -45,5 +45,17 @@ describe('BBP Formula & Hexadecimal Extractor', () => {
     const helloBin = '01001000';
     const shifted = '0' + helloBin;
     expect(binaryStreamToAscii(shifted, 1)).toBe('H');
+  });
+
+  it('accurately encodes and decodes 5-bit Natural Alphabet (A=1..Z=26, 0=Space)', () => {
+    expect(fiveBitToChar(1)).toBe('A');
+    expect(fiveBitToChar(26)).toBe('Z');
+    expect(fiveBitToChar(0)).toBe(' ');
+    expect(fiveBitToChar(31)).toBe(' ');
+    expect(fiveBitToChar(27)).toBe('.');
+
+    // "PI" in 5-bit: P = 16 (10000), I = 9 (01001) -> "1000001001"
+    const piBin = charToFiveBit('P') + charToFiveBit('I');
+    expect(binaryStreamTo5BitText(piBin)).toBe('PI');
   });
 });
