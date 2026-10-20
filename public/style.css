@@ -407,41 +407,61 @@ body {
   opacity: 0.8;
 }
 
-/* Formula Banner */
+/* Formula Banner - Minimal transparent showcase */
 .formula-banner {
-  background: linear-gradient(135deg, rgba(121, 40, 202, 0.12) 0%, rgba(0, 242, 254, 0.08) 100%);
-  border: 1px solid rgba(121, 40, 202, 0.25);
-  border-radius: var(--radius-lg);
-  padding: 1.25rem 1.5rem;
-  margin-bottom: 2.5rem;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 0.5rem 1rem 1.5rem;
+  margin: 0 auto 1.5rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
 }
 
 .formula-inner {
   display: flex;
+  justify-content: center;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 1.5rem;
+  width: 100%;
 }
 
 .formula-math {
-  font-family: var(--font-mono);
-  font-size: 0.95rem;
-  color: var(--accent-cyan);
-  background: rgba(0, 0, 0, 0.4);
-  padding: 0.6rem 1rem;
-  border-radius: var(--radius-sm);
-  border: 1px solid rgba(0, 242, 254, 0.2);
-  white-space: nowrap;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  color: #ffffff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.formula-math::-webkit-scrollbar { display: none; }
+
+.formula-math .katex-display {
+  margin: 0;
+}
+
+.formula-math .katex {
+  color: #ffffff;
+  font-size: 1.85rem;
+  line-height: 1.2;
+  letter-spacing: normal;
+  text-shadow: 0 0 24px rgba(255, 255, 255, 0.22);
+}
+
+.formula-math .katex .frac-line {
+  border-bottom-color: #ffffff !important;
 }
 
 .formula-text {
-  font-size: 0.875rem;
-  color: var(--text-muted);
-  flex: 1;
-  min-width: 280px;
-}
-.formula-text strong {
-  color: var(--text-main);
+  display: none;
 }
 
 /* Matrix Section */
