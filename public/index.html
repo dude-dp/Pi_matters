@@ -12,62 +12,69 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="ambient-glow glow-1"></div>
-  <div class="ambient-glow glow-2"></div>
-  <div class="ambient-glow glow-3"></div>
+  <!-- Nebula / Supernova Space Background -->
+  <canvas id="nebula-canvas" aria-hidden="true"></canvas>
+  <div class="nebula-layer nebula-core" aria-hidden="true"></div>
+  <div class="nebula-layer nebula-ring-1" aria-hidden="true"></div>
+  <div class="nebula-layer nebula-ring-2" aria-hidden="true"></div>
+  <div class="nebula-layer nebula-ring-3" aria-hidden="true"></div>
 
-  <div class="app-container">
-    <!-- Navigation / Top Header -->
-    <header class="main-header">
-      <div class="brand">
-        <div class="pi-symbol-badge">π</div>
-        <div>
-          <h1 class="brand-title">Pi Matters</h1>
-          <p class="brand-subtitle">Autonomous BBP Base-16 &middot; Binary &middot; Natural Language Discovery</p>
+  <!-- Slim Floating Navbar -->
+  <nav class="top-navbar" role="navigation" aria-label="Main navigation">
+    <div class="navbar-inner">
+      <div class="navbar-brand">
+        <div class="navbar-pi-badge" aria-hidden="true">π</div>
+        <div class="navbar-brand-text">
+          <span class="navbar-title">Pi Matters</span>
+          <span class="navbar-subtitle">Decoding god's language</span>
         </div>
       </div>
-      <div class="header-actions">
+      <div class="navbar-actions">
         <div class="status-indicator" id="worker-status-badge">
           <span class="pulsing-dot"></span>
           <span class="status-text">Worker Autonomous</span>
         </div>
         <button id="btn-mine-chunk" class="btn btn-primary" title="Trigger an immediate extraction chunk">
-          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
             <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
           </svg>
-          Mine Chunk Now
+          Mine Chunk
         </button>
       </div>
-    </header>
+    </div>
+  </nav>
 
-    <!-- Telemetry Cards -->
-    <section class="telemetry-grid">
-      <div class="metric-card" id="card-cursor">
-        <div class="metric-label">Global π Cursor</div>
-        <div class="metric-value" id="val-cursor">0</div>
-        <div class="metric-footnote">Fractional Hex Digit Position</div>
-      </div>
-      <div class="metric-card" id="card-processed">
-        <div class="metric-label">Digits Processed</div>
-        <div class="metric-value" id="val-processed">0</div>
-        <div class="metric-footnote">Extracted via BBP Spigot</div>
-      </div>
-      <div class="metric-card" id="card-words">
-        <div class="metric-label">Words Discovered</div>
-        <div class="metric-value accent-gold" id="val-words">0</div>
-        <div class="metric-footnote">Linguistic English Matches</div>
-      </div>
-      <div class="metric-card" id="card-phrases">
-        <div class="metric-label">Semantic Phrases</div>
-        <div class="metric-value accent-violet" id="val-phrases">0</div>
-        <div class="metric-footnote">Grammatical N-Grams</div>
-      </div>
-      <div class="metric-card" id="card-cadence">
-        <div class="metric-label">Cloudflare Cadence</div>
-        <div class="metric-value accent-cyan" id="val-cadence">Every 1m</div>
-        <div class="metric-footnote" id="val-last-run">Turbo Autonomous Cron</div>
-      </div>
-    </section>
+
+  <!-- Sticky Telemetry Bar -->
+  <section class="telemetry-grid" aria-label="Live metrics">
+    <div class="metric-card" id="card-cursor">
+      <div class="metric-label">Global π Cursor</div>
+      <div class="metric-value" id="val-cursor">0</div>
+      <div class="metric-footnote">Fractional Hex Digit Position</div>
+    </div>
+    <div class="metric-card" id="card-processed">
+      <div class="metric-label">Digits Processed</div>
+      <div class="metric-value" id="val-processed">0</div>
+      <div class="metric-footnote">Extracted via BBP Spigot</div>
+    </div>
+    <div class="metric-card" id="card-words">
+      <div class="metric-label">Words Discovered</div>
+      <div class="metric-value accent-gold" id="val-words">0</div>
+      <div class="metric-footnote">Linguistic English Matches</div>
+    </div>
+    <div class="metric-card" id="card-phrases">
+      <div class="metric-label">Semantic Phrases</div>
+      <div class="metric-value accent-violet" id="val-phrases">0</div>
+      <div class="metric-footnote">Grammatical N-Grams</div>
+    </div>
+    <div class="metric-card" id="card-cadence">
+      <div class="metric-label">Cloudflare Cadence</div>
+      <div class="metric-value accent-cyan" id="val-cadence">Every 1m</div>
+      <div class="metric-footnote" id="val-last-run">Turbo Autonomous Cron</div>
+    </div>
+  </section>
+
+  <div class="app-container">
 
     <!-- Turbo Swarm Client Miner HUD -->
     <section class="miner-section">
@@ -242,5 +249,144 @@
   <div class="toast-container" id="toast-container"></div>
 
   <script src="app.js"></script>
+  <script>
+  /* Nebula Starfield Canvas — Black space, red supernova */
+  (function () {
+    const canvas = document.getElementById('nebula-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+
+    let W, H, stars, sparks, animFrame;
+
+    function resize() {
+      W = canvas.width  = window.innerWidth;
+      H = canvas.height = window.innerHeight;
+    }
+
+    function rnd(a, b) { return a + Math.random() * (b - a); }
+
+    function createStars(n) {
+      return Array.from({ length: n }, () => ({
+        x: Math.random() * W,
+        y: Math.random() * H,
+        r: rnd(0.2, 1.4),
+        opacity: rnd(0.15, 0.85),
+        speed: rnd(0.0004, 0.0025),
+        phase: Math.random() * Math.PI * 2,
+        warm: Math.random() > 0.6   /* warm-tinted stars near supernova */
+      }));
+    }
+
+    /* Small ejected spark particles */
+    function createSparks(n) {
+      return Array.from({ length: n }, () => ({
+        x: W * rnd(0.08, 0.55),
+        y: H * rnd(0.05, 0.55),
+        r: rnd(0.4, 2.2),
+        opacity: rnd(0.05, 0.4),
+        speed: rnd(0.0006, 0.0028),
+        phase: Math.random() * Math.PI * 2,
+      }));
+    }
+
+    function drawStars(t) {
+      for (const s of stars) {
+        const alpha = Math.max(0.04, s.opacity * (0.5 + 0.5 * Math.sin(t * s.speed * 1000 + s.phase)));
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        ctx.fillStyle = s.warm
+          ? `rgba(255, 220, 190, ${alpha})`
+          : `rgba(215, 230, 255, ${alpha})`;
+        ctx.fill();
+      }
+      /* Spark particles — ember red */
+      for (const p of sparks) {
+        const alpha = Math.max(0.02, p.opacity * (0.5 + 0.5 * Math.sin(t * p.speed * 1200 + p.phase)));
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255, 80, 30, ${alpha})`;
+        ctx.fill();
+      }
+    }
+
+    function draw(t) {
+      /* — Pure black void — */
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(0, 0, W, H);
+
+      /* — PRIMARY supernova explosion — upper-left, crimson/white-hot core — */
+      const cx = W * 0.18, cy = H * 0.22;
+      const pulse = 0.91 + 0.09 * Math.sin(t * 0.00042);
+
+      const blast = ctx.createRadialGradient(cx, cy, 0, cx, cy, W * 0.58 * pulse);
+      blast.addColorStop(0.00, 'rgba(255, 255, 220, 0.28)');   /* white-hot core */
+      blast.addColorStop(0.04, 'rgba(255, 120,  30, 0.30)');   /* orange ring */
+      blast.addColorStop(0.12, 'rgba(220,  20,  10, 0.26)');   /* deep crimson */
+      blast.addColorStop(0.28, 'rgba(150,   5,   0, 0.16)');
+      blast.addColorStop(0.52, 'rgba( 80,   0,   0, 0.08)');
+      blast.addColorStop(0.80, 'rgba( 30,   0,   0, 0.03)');
+      blast.addColorStop(1.00, 'rgba(  0,   0,   0, 0.00)');
+      ctx.fillStyle = blast;
+      ctx.fillRect(0, 0, W, H);
+
+      /* Shock-wave ring around primary */
+      const ring = ctx.createRadialGradient(cx, cy, W * 0.30 * pulse, cx, cy, W * 0.40 * pulse);
+      ring.addColorStop(0.00, 'rgba(255, 60, 10, 0.00)');
+      ring.addColorStop(0.40, 'rgba(255, 60, 10, 0.07)');
+      ring.addColorStop(0.70, 'rgba(255, 40,  5, 0.04)');
+      ring.addColorStop(1.00, 'rgba(  0,  0,  0, 0.00)');
+      ctx.fillStyle = ring;
+      ctx.fillRect(0, 0, W, H);
+
+      /* — SECONDARY supernova remnant — lower-right — */
+      const bx = W * 0.82, by = H * 0.78;
+      const pulseb = 0.88 + 0.12 * Math.sin(t * 0.00033 + 1.8);
+
+      const blast2 = ctx.createRadialGradient(bx, by, 0, bx, by, W * 0.44 * pulseb);
+      blast2.addColorStop(0.00, 'rgba(255, 180,  40, 0.18)');
+      blast2.addColorStop(0.08, 'rgba(220,  40,  10, 0.20)');
+      blast2.addColorStop(0.25, 'rgba(140,   5,   0, 0.12)');
+      blast2.addColorStop(0.55, 'rgba( 60,   0,   0, 0.05)');
+      blast2.addColorStop(1.00, 'rgba(  0,   0,   0, 0.00)');
+      ctx.fillStyle = blast2;
+      ctx.fillRect(0, 0, W, H);
+
+      /* — TERTIARY dim ember — mid-center — */
+      const dx = W * 0.52, dy = H * 0.48;
+      const pulsed = 0.93 + 0.07 * Math.sin(t * 0.00025 + 3.4);
+      const ember = ctx.createRadialGradient(dx, dy, 0, dx, dy, W * 0.28 * pulsed);
+      ember.addColorStop(0.00, 'rgba(200, 30, 10, 0.07)');
+      ember.addColorStop(0.40, 'rgba(120,  5,  0, 0.04)');
+      ember.addColorStop(1.00, 'rgba(  0,  0,  0, 0.00)');
+      ctx.fillStyle = ember;
+      ctx.fillRect(0, 0, W, H);
+
+      drawStars(t);
+      animFrame = requestAnimationFrame(draw);
+    }
+
+    function init() {
+      resize();
+      stars  = createStars(280);
+      sparks = createSparks(80);
+      animFrame = requestAnimationFrame(draw);
+    }
+
+    window.addEventListener('resize', () => {
+      resize();
+      stars  = createStars(280);
+      sparks = createSparks(80);
+    });
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      resize();
+      stars  = createStars(280);
+      sparks = createSparks(80);
+      requestAnimationFrame(t => draw(t));
+    } else {
+      init();
+    }
+  })();
+  </script>
 </body>
 </html>
