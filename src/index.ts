@@ -3,7 +3,7 @@ import { cors } from 'hono/cors';
 import { getPiHexDigits, hexToBinary, hexToAscii } from './bbp';
 import { scanHexForWords } from './matcher';
 import { getMeta, getDiscoveries, searchDiscoveries } from './db';
-import { runAutonomousMining, Bindings } from './mining';
+import { runAutonomousMining, resolveDatabase, Bindings } from './mining';
 
 const app = new Hono<{ Bindings: Bindings }>();
 
@@ -14,37 +14,43 @@ app.use('/api/*', cors());
 
 // 1. Health check & Telemetry
 app.get('/api/stats', async (c) => {
-  const cursor = parseInt(await getMeta(c.env.DB, 'cursor_digit_index', '0'), 10);
-  const totalProcessed = parseInt(await getMeta(c.env.DB, 'total_digits_processed', '0'), 10);
-  const totalWords = parseInt(await getMeta(c.env.DB, 'total_words_found', '0'), 10);
-  const lastRunAt = await getMeta(c.env.DB, 'last_run_at', '');
+  const db = resolveDatabase(c.env);
+  const cursor = parseInt(await getMeta(db, 'cursor_digit_index', '0'), 10);
+  const totalProcessed = parseInt(await getMeta(db, 'total_digits_processed', '0'), 10);
+  const totalWords = parseInt(await getMeta(db, 'total_words_found', '0'), 10);
+  const totalPhrases = parseInt(await getMeta(db, 'total_phrases_found', '0'), 10);
+  const lastRunAt = await getMeta(db, 'last_run_at', '');
 
   return c.json({
     cursor,
     totalProcessed,
     totalWords,
+    totalPhrases,
     lastRunAt,
     uptime: 'Autonomous (Cloudflare Workers Cron)',
     algorithm: 'Bailey–Borwein–Plouffe (BBP Base-16)'
   });
 });
 
-// 2. Discoveries list (paginated)
+// 2. Discoveries list (paginated, with filter: all, phrases, words, rarest)
 app.get('/api/discoveries', async (c) => {
+  const db = resolveDatabase(c.env);
   const limit = Math.min(parseInt(c.req.query('limit') || '50', 10), 100);
   const offset = parseInt(c.req.query('offset') || '0', 10);
+  const filter = (c.req.query('filter') || 'all') as 'all' | 'phrases' | 'words' | 'rarest';
 
-  const data = await getDiscoveries(c.env.DB, limit, offset);
+  const data = await getDiscoveries(db, limit, offset, filter);
   return c.json(data);
 });
 
 // 3. Search discoveries
 app.get('/api/search', async (c) => {
+  const db = resolveDatabase(c.env);
   const query = c.req.query('q') || '';
   if (!query) {
     return c.json({ results: [] });
   }
-  const results = await searchDiscoveries(c.env.DB, query);
+  const results = await searchDiscoveries(db, query);
   return c.json({ query, count: results.length, results });
 });
 
@@ -56,7 +62,7 @@ app.get('/api/inspect/:position', async (c) => {
   const hex = getPiHexDigits(position, count);
   const binary = hexToBinary(hex);
   const ascii = hexToAscii(hex, { replaceNonPrintable: true });
-  const detected = scanHexForWords(hex, position);
+  const detected = scanHexForWords(hex, position, { detectPhrases: true });
 
   return c.json({
     position,
@@ -70,14 +76,14 @@ app.get('/api/inspect/:position', async (c) => {
 
 // 5. Trigger on-demand mining chunk
 app.post('/api/mine', async (c) => {
-  let batchSize = 100;
+  let batchSize = 160;
   try {
     const body = await c.req.json();
     if (body && typeof body.batchSize === 'number') {
-      batchSize = Math.min(Math.max(10, body.batchSize), 200);
+      batchSize = Math.min(Math.max(10, body.batchSize), 250);
     }
   } catch {
-    // default to 100
+    // default to 160
   }
 
   const result = await runAutonomousMining(c.env, batchSize);
@@ -90,12 +96,12 @@ app.post('/api/mine', async (c) => {
 // Standard Worker Export
 export default {
   fetch: app.fetch,
-
+  
   /**
    * Scheduled Cron Trigger (Runs periodically on Cloudflare Workers)
    */
   async scheduled(event: ScheduledEvent, env: Bindings, ctx: ExecutionContext) {
     console.log(`[Scheduled] Cron triggered at ${event.cron}. Mining next chunk of Pi...`);
-    ctx.waitUntil(runAutonomousMining(env, 120));
+    ctx.waitUntil(runAutonomousMining(env, 180));
   }
 };

@@ -57,6 +57,11 @@
         <div class="metric-value accent-gold" id="val-words">0</div>
         <div class="metric-footnote">Linguistic English Matches</div>
       </div>
+      <div class="metric-card" id="card-phrases">
+        <div class="metric-label">Semantic Phrases</div>
+        <div class="metric-value accent-violet" id="val-phrases">0</div>
+        <div class="metric-footnote">Grammatical N-Grams</div>
+      </div>
       <div class="metric-card" id="card-cadence">
         <div class="metric-label">Cloudflare Cadence</div>
         <div class="metric-value accent-cyan" id="val-cadence">Every 5m</div>
@@ -71,7 +76,7 @@
           $$\pi = \sum_{k=0}^{\infty} \frac{1}{16^k} \left( \frac{4}{8k+1} - \frac{2}{8k+4} - \frac{1}{8k+5} - \frac{1}{8k+6} \right)$$
         </div>
         <div class="formula-text">
-          <strong>The Bailey–Borwein–Plouffe (BBP) Engine:</strong> Computes the $n$-th base-16 digit directly without prior calculations. Each hex digit translates into 4 bits; consecutive bytes form ASCII strings that are autonomously mined for readable language.
+          <strong>The Bailey–Borwein–Plouffe (BBP) Engine:</strong> Computes the $n$-th base-16 digit directly without prior calculations. Each hex digit translates into 4 bits; consecutive bytes form ASCII strings that are autonomously mined for readable language and multi-word semantic phrases.
         </div>
       </div>
     </section>
@@ -131,27 +136,40 @@
       </div>
     </section>
 
-    <!-- Discovered Words Gallery -->
+    <!-- Timeline of Pi Discoveries -->
     <section class="discoveries-section">
       <div class="section-header">
         <div class="section-title-wrap">
-          <h2 class="section-title">The Library of Pi &middot; Discoveries</h2>
-          <span class="section-badge" id="badge-discovery-count">0 Words</span>
+          <h2 class="section-title">Timeline of Pi &middot; Journey Across Infinity</h2>
+          <span class="section-badge" id="badge-discovery-count">0 Discoveries</span>
         </div>
+
         <div class="search-box">
           <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="11" cy="11" r="8"></circle>
             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
           </svg>
-          <input type="text" id="input-search" placeholder="Search discoveries (e.g. LIFE, CODE, MIND)..." autocomplete="off">
+          <input type="text" id="input-search" placeholder="Search discoveries (e.g. LOVE, SPACE, MIND)..." autocomplete="off">
           <button id="btn-clear-search" class="btn-clear" style="display:none;">&times;</button>
         </div>
       </div>
 
-      <div class="discoveries-grid" id="discoveries-container">
-        <div class="empty-state">
-          <div class="spinner"></div>
-          <p>Scanning the infinite decimals of Pi...</p>
+      <!-- Filter Chips -->
+      <div class="filter-chips">
+        <button class="chip active" data-filter="all">All Discoveries</button>
+        <button class="chip" data-filter="phrases">Semantic Phrases ✨</button>
+        <button class="chip" data-filter="words">Single Words</button>
+        <button class="chip" data-filter="rarest">Rarest Discoveries 💎</button>
+      </div>
+
+      <!-- Timeline Rail & Container -->
+      <div class="timeline-container" id="timeline-container">
+        <div class="timeline-rail"></div>
+        <div class="timeline-items" id="discoveries-container">
+          <div class="empty-state">
+            <div class="spinner"></div>
+            <p>Scanning the infinite decimals of Pi...</p>
+          </div>
         </div>
       </div>
     </section>

@@ -1,10 +1,11 @@
 import { DiscoveredMatch } from './matcher';
 
-// In-memory fallback for local environments without D1 binding
+// In-memory fallback for local development or testing without D1 attached
 const memoryMeta = new Map<string, string>([
   ['cursor_digit_index', '0'],
   ['total_digits_processed', '0'],
   ['total_words_found', '0'],
+  ['total_phrases_found', '0'],
   ['last_run_at', '']
 ]);
 const memoryDiscoveries: (DiscoveredMatch & { id: number; discovered_at: string })[] = [];
@@ -41,6 +42,11 @@ export async function setMeta(db: D1Database | undefined, key: string, value: st
 export async function saveDiscoveries(db: D1Database | undefined, matches: DiscoveredMatch[]): Promise<number> {
   if (matches.length === 0) return 0;
 
+  let phrasesCount = 0;
+  for (const m of matches) {
+    if (m.isPhrase) phrasesCount++;
+  }
+
   if (!db) {
     for (const m of matches) {
       memoryDiscoveries.unshift({
@@ -49,8 +55,11 @@ export async function saveDiscoveries(db: D1Database | undefined, matches: Disco
         discovered_at: new Date().toISOString()
       });
     }
-    const currentCount = parseInt(memoryMeta.get('total_words_found') || '0', 10);
-    memoryMeta.set('total_words_found', (currentCount + matches.length).toString());
+    const currentWords = parseInt(memoryMeta.get('total_words_found') || '0', 10);
+    memoryMeta.set('total_words_found', (currentWords + matches.length).toString());
+
+    const currentPhrases = parseInt(memoryMeta.get('total_phrases_found') || '0', 10);
+    memoryMeta.set('total_phrases_found', (currentPhrases + phrasesCount).toString());
     return matches.length;
   }
 
@@ -58,8 +67,9 @@ export async function saveDiscoveries(db: D1Database | undefined, matches: Disco
     const statements = matches.map(m =>
       db.prepare(
         `INSERT INTO discoveries 
-         (word, length, digit_start, digit_end, hex_snippet, binary_snippet, decoded_ascii, discovered_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))`
+         (word, length, digit_start, digit_end, hex_snippet, binary_snippet, decoded_ascii,
+          is_phrase, phrase_type, phrase_label, rarity_tier, word_count, discovered_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))`
       ).bind(
         m.word,
         m.length,
@@ -67,17 +77,30 @@ export async function saveDiscoveries(db: D1Database | undefined, matches: Disco
         m.digitEnd,
         m.hexSnippet,
         m.binarySnippet,
-        m.decodedAscii
+        m.decodedAscii,
+        m.isPhrase ? 1 : 0,
+        m.phraseType,
+        m.phraseLabel,
+        m.rarityTier,
+        m.wordCount
       )
     );
 
     await db.batch(statements);
 
-    // Update total count
+    // Update total words counter
     await db.prepare(
       `INSERT INTO meta (key, value) VALUES ('total_words_found', ?)
        ON CONFLICT(key) DO UPDATE SET value = CAST(CAST(value AS INTEGER) + ? AS TEXT)`
     ).bind(matches.length.toString(), matches.length).run();
+
+    // Update total phrases counter if any found
+    if (phrasesCount > 0) {
+      await db.prepare(
+        `INSERT INTO meta (key, value) VALUES ('total_phrases_found', ?)
+         ON CONFLICT(key) DO UPDATE SET value = CAST(CAST(value AS INTEGER) + ? AS TEXT)`
+      ).bind(phrasesCount.toString(), phrasesCount).run();
+    }
 
     return matches.length;
   } catch (err) {
@@ -96,20 +119,50 @@ export async function saveDiscoveries(db: D1Database | undefined, matches: Disco
 export async function getDiscoveries(
   db: D1Database | undefined,
   limit = 50,
-  offset = 0
+  offset = 0,
+  filter: 'all' | 'phrases' | 'words' | 'rarest' = 'all'
 ): Promise<{ discoveries: any[]; total: number }> {
   if (!db) {
-    const total = memoryDiscoveries.length;
-    const discoveries = memoryDiscoveries.slice(offset, offset + limit);
-    return { discoveries, total };
+    let filtered = memoryDiscoveries;
+    if (filter === 'phrases') {
+      filtered = memoryDiscoveries.filter(d => d.isPhrase);
+    } else if (filter === 'words') {
+      filtered = memoryDiscoveries.filter(d => !d.isPhrase);
+    } else if (filter === 'rarest') {
+      filtered = [...memoryDiscoveries].sort((a, b) => {
+        const order = { MYTHIC: 4, EPIC: 3, RARE: 2, UNCOMMON: 1, COMMON: 0 };
+        return (order[b.rarityTier] || 0) - (order[a.rarityTier] || 0);
+      });
+    }
+    return { discoveries: filtered.slice(offset, offset + limit), total: filtered.length };
   }
 
   try {
-    const countRes = await db.prepare('SELECT COUNT(*) as count FROM discoveries').first<{ count: number }>();
+    let whereClause = '';
+    let orderBy = 'ORDER BY digit_start ASC';
+
+    if (filter === 'phrases') {
+      whereClause = 'WHERE is_phrase = 1';
+      orderBy = 'ORDER BY digit_start ASC';
+    } else if (filter === 'words') {
+      whereClause = 'WHERE is_phrase = 0';
+      orderBy = 'ORDER BY digit_start ASC';
+    } else if (filter === 'rarest') {
+      orderBy = `ORDER BY 
+        CASE rarity_tier 
+          WHEN 'MYTHIC' THEN 4 
+          WHEN 'EPIC' THEN 3 
+          WHEN 'RARE' THEN 2 
+          WHEN 'UNCOMMON' THEN 1 
+          ELSE 0 
+        END DESC, digit_start ASC`;
+    }
+
+    const countRes = await db.prepare(`SELECT COUNT(*) as count FROM discoveries ${whereClause}`).first<{ count: number }>();
     const total = countRes ? countRes.count : 0;
 
     const listRes = await db.prepare(
-      'SELECT * FROM discoveries ORDER BY length DESC, digit_start ASC LIMIT ? OFFSET ?'
+      `SELECT * FROM discoveries ${whereClause} ${orderBy} LIMIT ? OFFSET ?`
     ).bind(limit, offset).all();
 
     return { discoveries: listRes.results || [], total };

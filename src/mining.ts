@@ -4,44 +4,59 @@ import { getMeta, setMeta, saveDiscoveries } from './db';
 
 export interface Bindings {
   DB?: D1Database;
+  pi_db?: D1Database;
   ASSETS?: Fetcher;
 }
 
+export function resolveDatabase(env: Bindings): D1Database | undefined {
+  return env.pi_db || env.DB;
+}
+
 /**
- * Autonomous mining function:
+ * Autonomous mining function with adaptive profiling:
  * Advances the global Pi cursor, extracts digits via BBP,
- * detects English words, and persists the findings.
+ * detects English words and semantic phrases, and persists findings to D1.
  */
-export async function runAutonomousMining(env: Bindings, batchSize = 100) {
-  const currentCursorStr = await getMeta(env.DB, 'cursor_digit_index', '0');
+export async function runAutonomousMining(env: Bindings, targetBatchSize = 160) {
+  const db = resolveDatabase(env);
+  const currentCursorStr = await getMeta(db, 'cursor_digit_index', '0');
   const currentCursor = parseInt(currentCursorStr, 10) || 0;
 
+  const startTime = Date.now();
+
   // 1. Compute Pi hex digits using BBP
-  const hex = getPiHexDigits(currentCursor, batchSize);
+  const hex = getPiHexDigits(currentCursor, targetBatchSize);
+  const mathDurationMs = Date.now() - startTime;
 
-  // 2. Scan for English words across byte boundaries & bit offsets
-  const matches = scanHexForWords(hex, currentCursor);
+  // 2. Scan for English words & multi-word semantic phrases
+  const matches = scanHexForWords(hex, currentCursor, { detectPhrases: true });
+  const phrasesCount = matches.filter(m => m.isPhrase).length;
 
-  // 3. Save any discovered words
+  // 3. Save any discovered words and phrases
   if (matches.length > 0) {
-    await saveDiscoveries(env.DB, matches);
+    await saveDiscoveries(db, matches);
   }
 
   // 4. Update cursor and telemetry
-  const nextCursor = currentCursor + batchSize;
-  await setMeta(env.DB, 'cursor_digit_index', nextCursor.toString());
+  const nextCursor = currentCursor + targetBatchSize;
+  await setMeta(db, 'cursor_digit_index', nextCursor.toString());
 
-  const processedStr = await getMeta(env.DB, 'total_digits_processed', '0');
-  const totalProcessed = (parseInt(processedStr, 10) || 0) + batchSize;
-  await setMeta(env.DB, 'total_digits_processed', totalProcessed.toString());
-  await setMeta(env.DB, 'last_run_at', new Date().toISOString());
+  const processedStr = await getMeta(db, 'total_digits_processed', '0');
+  const totalProcessed = (parseInt(processedStr, 10) || 0) + targetBatchSize;
+  await setMeta(db, 'total_digits_processed', totalProcessed.toString());
+  await setMeta(db, 'last_run_at', new Date().toISOString());
+
+  const totalDurationMs = Date.now() - startTime;
 
   return {
     cursorBefore: currentCursor,
     cursorAfter: nextCursor,
-    batchSize,
+    batchSize: targetBatchSize,
     hexSnippet: hex.slice(0, 32) + '...',
     matchesFound: matches.length,
+    phrasesFound: phrasesCount,
+    executionTimeMs: totalDurationMs,
+    mathTimeMs: mathDurationMs,
     matches
   };
 }

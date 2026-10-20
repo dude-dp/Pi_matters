@@ -1,14 +1,16 @@
-// Pi Matters · Frontend Client Engine
+// Pi Matters · Enhanced Frontend Client Engine
 (function () {
   let currentSeekPosition = 0;
   let isAutoStreaming = false;
   let autoStreamTimer = null;
   let searchDebounceTimer = null;
+  let currentFilter = 'all';
 
   // DOM Elements
   const elCursor = document.getElementById('val-cursor');
   const elProcessed = document.getElementById('val-processed');
   const elWords = document.getElementById('val-words');
+  const elPhrases = document.getElementById('val-phrases');
   const elLastRun = document.getElementById('val-last-run');
 
   const btnMine = document.getElementById('btn-mine-chunk');
@@ -28,10 +30,11 @@
   const badgeDiscoveryCount = document.getElementById('badge-discovery-count');
   const inputSearch = document.getElementById('input-search');
   const btnClearSearch = document.getElementById('btn-clear-search');
+  const filterChips = document.querySelectorAll('.chip');
 
   // Format numbers with commas
   function formatNum(n) {
-    return new Intl.NumberFormat().format(n);
+    return new Intl.NumberFormat().format(n || 0);
   }
 
   // Fetch Telemetry & Stats
@@ -44,22 +47,25 @@
       elCursor.textContent = formatNum(data.cursor);
       elProcessed.textContent = formatNum(data.totalProcessed);
       elWords.textContent = formatNum(data.totalWords);
+      if (elPhrases) {
+        elPhrases.textContent = formatNum(data.totalPhrases);
+      }
 
       if (data.lastRunAt) {
         const date = new Date(data.lastRunAt);
         elLastRun.textContent = `Last run: ${date.toLocaleTimeString()}`;
       } else {
-        elLastRun.textContent = 'Awaiting first cron run';
+        elLastRun.textContent = 'Awaiting next cron run';
       }
     } catch (err) {
       console.warn('Failed to load stats:', err);
     }
   }
 
-  // Load and Render Discoveries
+  // Load and Render Discoveries on Timeline
   async function loadDiscoveries(query = '') {
     try {
-      let url = '/api/discoveries?limit=50';
+      let url = `/api/discoveries?limit=60&filter=${encodeURIComponent(currentFilter)}`;
       if (query) {
         url = `/api/search?q=${encodeURIComponent(query)}`;
       }
@@ -69,39 +75,52 @@
       const data = await res.json();
       const list = query ? data.results : data.discoveries;
 
-      badgeDiscoveryCount.textContent = `${list.length} Discovered`;
+      badgeDiscoveryCount.textContent = `${list.length} Discoveries`;
 
       if (list.length === 0) {
         discoveriesContainer.innerHTML = `
           <div class="empty-state">
-            <p>${query ? `No occurrences found for "${query}".` : 'No words discovered yet. Click "Mine Chunk Now" to extract digits!'}</p>
+            <p>${query ? `No occurrences found for "${escapeHtml(query)}".` : 'No discoveries in this category yet. Click "Mine Chunk Now" to unearth text!'}</p>
           </div>
         `;
         return;
       }
 
-      discoveriesContainer.innerHTML = list.map(item => `
-        <div class="discovery-card" data-word="${item.word}">
-          <div class="card-top">
-            <span class="word-badge">${item.word}</span>
-            <span class="offset-pill">Digits [${item.digit_start} &ndash; ${item.digit_end}]</span>
-          </div>
+      discoveriesContainer.innerHTML = list.map(item => {
+        const rarity = (item.rarity_tier || 'COMMON').toLowerCase();
+        const rarityClass = `rarity-${rarity}`;
+        const pillClass = `pill-${rarity}`;
 
-          <div class="card-ascii-context">
-            Decoded: <strong>${escapeHtml(item.decoded_ascii || item.word)}</strong>
-          </div>
+        return `
+          <div class="timeline-node">
+            <div class="timeline-marker"></div>
+            <div class="discovery-card ${rarityClass}" data-word="${escapeHtml(item.word)}">
+              <div class="card-top">
+                <div class="word-badge-wrap">
+                  <span class="word-badge">${escapeHtml(item.word)}</span>
+                  <span class="rarity-pill ${pillClass}">${item.rarity_tier || 'COMMON'}</span>
+                  ${item.phrase_label && item.phrase_label !== 'Single Word' ? `<span class="syntax-badge">${escapeHtml(item.phrase_label)}</span>` : ''}
+                </div>
+                <span class="offset-pill">Digits [${item.digit_start} &ndash; ${item.digit_end}]</span>
+              </div>
 
-          <div class="card-data-row">
-            <div class="card-data-label">Hex Sequence (Base-16)</div>
-            <div class="card-data-val">${item.hex_snippet}</div>
-          </div>
+              <div class="card-ascii-context">
+                Decoded Context: <strong>${escapeHtml(item.decoded_ascii || item.word)}</strong>
+              </div>
 
-          <div class="card-data-row">
-            <div class="card-data-label">Binary Bits</div>
-            <div class="card-data-val">${formatBinary(item.binary_snippet)}</div>
+              <div class="card-data-row">
+                <div class="card-data-label">Hex Sequence (Base-16)</div>
+                <div class="card-data-val">${escapeHtml(item.hex_snippet || '')}</div>
+              </div>
+
+              <div class="card-data-row">
+                <div class="card-data-label">Binary Bits (4-bit per hex)</div>
+                <div class="card-data-val">${formatBinary(item.binary_snippet)}</div>
+              </div>
+            </div>
           </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
     } catch (err) {
       console.warn('Failed to load discoveries:', err);
     }
@@ -109,12 +128,11 @@
 
   function formatBinary(bin) {
     if (!bin) return '';
-    // Group in 8-bit bytes
     return bin.match(/.{1,8}/g)?.join(' ') || bin;
   }
 
   function escapeHtml(str) {
-    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }
 
   // Load Inspect Matrix
@@ -127,20 +145,17 @@
       if (!res.ok) return;
       const data = await res.json();
 
-      // Format Hex with spacing every 2 chars (1 byte)
       const formattedHex = data.hex.match(/.{1,2}/g)?.join(' ') || data.hex;
       matrixHex.textContent = formattedHex;
 
-      // Format Binary with spacing every 8 bits
       const formattedBin = data.binary.match(/.{1,8}/g)?.join(' ') || data.binary;
       matrixBinary.textContent = formattedBin;
 
-      // Render ASCII with highlighted words if any detected
       let asciiHtml = escapeHtml(data.ascii);
       if (data.detectedWords && data.detectedWords.length > 0) {
         for (const w of data.detectedWords) {
-          const regex = new RegExp(w.word, 'gi');
-          asciiHtml = asciiHtml.replace(regex, `<span class="highlight-word">${w.word}</span>`);
+          const regex = new RegExp(`(${w.word})`, 'gi');
+          asciiHtml = asciiHtml.replace(regex, `<span class="highlight-word">$1</span>`);
         }
       }
       matrixAscii.innerHTML = asciiHtml;
@@ -149,10 +164,19 @@
     }
   }
 
+  // Filter Chips Listener
+  filterChips.forEach(chip => {
+    chip.addEventListener('click', () => {
+      filterChips.forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      currentFilter = chip.getAttribute('data-filter') || 'all';
+      loadDiscoveries(inputSearch.value.trim());
+    });
+  });
+
   // Event: Mine Chunk Now
   btnMine.addEventListener('click', async () => {
     btnMine.disabled = true;
-    btnMine.classList.add('loading');
     const originalText = btnMine.innerHTML;
     btnMine.innerHTML = `<span class="spinner" style="width:16px;height:16px;border-width:2px;display:inline-block;"></span> Mining...`;
 
@@ -160,15 +184,13 @@
       const res = await fetch('/api/mine', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ batchSize: 120 })
+        body: JSON.stringify({ batchSize: 180 })
       });
       const data = await res.json();
-      
-      // Update stats and matrix
+
       await loadStats();
       await loadDiscoveries();
-      
-      // Jump view to latest processed chunk
+
       if (data.cursorBefore !== undefined) {
         currentSeekPosition = data.cursorBefore;
         inputSeekPos.value = currentSeekPosition;

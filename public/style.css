@@ -1,10 +1,10 @@
 :root {
   --bg-primary: #07090e;
   --bg-card: rgba(16, 22, 34, 0.75);
-  --bg-card-hover: rgba(22, 30, 46, 0.85);
+  --bg-card-hover: rgba(22, 30, 46, 0.9);
   --border-subtle: rgba(255, 255, 255, 0.08);
   --border-glow: rgba(0, 242, 254, 0.3);
-
+  
   --text-main: #f3f6fc;
   --text-muted: #8b9bb4;
   --text-dim: #54647c;
@@ -14,11 +14,11 @@
   --accent-gold: #ffb703;
   --accent-emerald: #00f59b;
   --accent-rose: #ff3366;
+  --accent-mythic: linear-gradient(135deg, #ff007f 0%, #7928ca 50%, #00f2fe 100%);
 
   --font-sans: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', Menlo, monospace;
 
-  --shadow-glow: 0 0 35px rgba(0, 242, 254, 0.15);
   --radius-lg: 16px;
   --radius-md: 10px;
   --radius-sm: 6px;
@@ -49,7 +49,6 @@ body {
   z-index: 0;
   opacity: 0.35;
 }
-
 .glow-1 {
   width: 450px;
   height: 450px;
@@ -57,7 +56,6 @@ body {
   top: -100px;
   left: -100px;
 }
-
 .glow-2 {
   width: 500px;
   height: 500px;
@@ -65,7 +63,6 @@ body {
   bottom: 10%;
   right: -100px;
 }
-
 .glow-3 {
   width: 350px;
   height: 350px;
@@ -161,17 +158,8 @@ body {
 }
 
 @keyframes pulse {
-
-  0%,
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-
-  50% {
-    opacity: 0.4;
-    transform: scale(0.85);
-  }
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
 }
 
 /* Buttons */
@@ -195,7 +183,6 @@ body {
   color: #07090e;
   box-shadow: 0 4px 18px rgba(0, 242, 254, 0.3);
 }
-
 .btn-primary:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 24px rgba(0, 242, 254, 0.5);
@@ -206,7 +193,6 @@ body {
   color: var(--text-main);
   border: 1px solid var(--border-subtle);
 }
-
 .btn-secondary:hover {
   background: rgba(255, 255, 255, 0.15);
 }
@@ -216,11 +202,9 @@ body {
   color: var(--accent-cyan);
   border: 1px solid rgba(0, 242, 254, 0.4);
 }
-
 .btn-outline:hover {
   background: rgba(0, 242, 254, 0.1);
 }
-
 .btn-outline.active {
   background: var(--accent-cyan);
   color: #07090e;
@@ -232,7 +216,6 @@ body {
   border: 1px solid var(--border-subtle);
   color: var(--text-main);
 }
-
 .btn-icon-only:hover {
   background: rgba(255, 255, 255, 0.12);
 }
@@ -245,7 +228,7 @@ body {
 /* Telemetry Grid */
 .telemetry-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
   gap: 1.25rem;
   margin-bottom: 2rem;
 }
@@ -258,7 +241,6 @@ body {
   padding: 1.4rem;
   transition: transform 0.2s ease, border-color 0.2s ease;
 }
-
 .metric-card:hover {
   border-color: var(--border-glow);
   transform: translateY(-2px);
@@ -281,13 +263,9 @@ body {
   letter-spacing: -0.02em;
 }
 
-.accent-gold {
-  color: var(--accent-gold);
-}
-
-.accent-cyan {
-  color: var(--accent-cyan);
-}
+.accent-gold { color: var(--accent-gold); }
+.accent-cyan { color: var(--accent-cyan); }
+.accent-violet { color: #c084fc; }
 
 .metric-footnote {
   font-size: 0.75rem;
@@ -327,7 +305,6 @@ body {
   flex: 1;
   min-width: 280px;
 }
-
 .formula-text strong {
   color: var(--text-main);
 }
@@ -392,7 +369,6 @@ body {
   font-family: var(--font-mono);
   font-size: 0.875rem;
 }
-
 .input-group input:focus {
   outline: none;
   border-color: var(--accent-cyan);
@@ -410,7 +386,6 @@ body {
 .matrix-row {
   margin-bottom: 1.5rem;
 }
-
 .matrix-row:last-child {
   margin-bottom: 0;
 }
@@ -429,21 +404,9 @@ body {
   padding: 0.2rem 0.5rem;
   border-radius: 4px;
 }
-
-.hex-tag {
-  background: rgba(0, 242, 254, 0.15);
-  color: var(--accent-cyan);
-}
-
-.bin-tag {
-  background: rgba(138, 43, 226, 0.15);
-  color: #c084fc;
-}
-
-.ascii-tag {
-  background: rgba(255, 183, 3, 0.15);
-  color: var(--accent-gold);
-}
+.hex-tag { background: rgba(0, 242, 254, 0.15); color: var(--accent-cyan); }
+.bin-tag { background: rgba(138, 43, 226, 0.15); color: #c084fc; }
+.ascii-tag { background: rgba(255, 183, 3, 0.15); color: var(--accent-gold); }
 
 .range-indicator {
   font-size: 0.75rem;
@@ -490,7 +453,7 @@ body {
   font-weight: 700;
 }
 
-/* Discoveries Section */
+/* Search Box */
 .search-box {
   position: relative;
   width: 320px;
@@ -519,7 +482,6 @@ body {
   font-size: 0.875rem;
   transition: border-color 0.2s ease;
 }
-
 .search-box input:focus {
   outline: none;
   border-color: var(--accent-cyan);
@@ -537,42 +499,173 @@ body {
   cursor: pointer;
 }
 
-.discoveries-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 1.25rem;
+/* Filter Chips */
+.filter-chips {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 2rem;
 }
 
-.discovery-card {
-  background: var(--bg-card);
-  backdrop-filter: blur(12px);
+.chip {
+  padding: 0.5rem 1.1rem;
+  background: rgba(255, 255, 255, 0.05);
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
-  padding: 1.4rem;
+  border-radius: 30px;
+  color: var(--text-muted);
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.chip:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+.chip.active {
+  background: rgba(0, 242, 254, 0.15);
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+}
+
+/* Timeline of Pi Journey */
+.timeline-container {
+  position: relative;
+  padding-left: 2rem;
+}
+
+.timeline-rail {
+  position: absolute;
+  left: 9px;
+  top: 10px;
+  bottom: 20px;
+  width: 2px;
+  background: linear-gradient(180deg, var(--accent-cyan) 0%, var(--accent-violet) 50%, rgba(255, 183, 3, 0.3) 100%);
+  box-shadow: 0 0 12px rgba(0, 242, 254, 0.4);
+}
+
+.timeline-items {
   display: flex;
   flex-direction: column;
-  gap: 0.9rem;
-  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  gap: 1.75rem;
 }
 
+.timeline-node {
+  position: relative;
+}
+
+.timeline-marker {
+  position: absolute;
+  left: -2.35rem;
+  top: 1.5rem;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #07090e;
+  border: 3px solid var(--accent-cyan);
+  box-shadow: 0 0 10px var(--accent-cyan);
+  z-index: 2;
+}
+
+/* Discovery Card & Rarity Frame */
+.discovery-card {
+  background: var(--bg-card);
+  backdrop-filter: blur(14px);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
 .discovery-card:hover {
-  transform: translateY(-3px);
+  transform: translateX(4px);
+  background: var(--bg-card-hover);
+}
+
+/* Rarity Tiers */
+.rarity-mythic {
+  border-color: rgba(255, 0, 128, 0.6);
+  box-shadow: 0 0 28px rgba(255, 0, 128, 0.25);
+  background: linear-gradient(135deg, rgba(255, 0, 128, 0.08) 0%, rgba(121, 40, 202, 0.08) 100%);
+}
+.rarity-mythic .timeline-marker {
+  border-color: #ff007f;
+  box-shadow: 0 0 14px #ff007f;
+}
+
+.rarity-epic {
+  border-color: rgba(138, 43, 226, 0.5);
+  box-shadow: 0 0 24px rgba(138, 43, 226, 0.2);
+}
+.rarity-epic .timeline-marker {
+  border-color: var(--accent-violet);
+  box-shadow: 0 0 12px var(--accent-violet);
+}
+
+.rarity-rare {
   border-color: rgba(255, 183, 3, 0.4);
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
+}
+.rarity-rare .timeline-marker {
+  border-color: var(--accent-gold);
+  box-shadow: 0 0 10px var(--accent-gold);
 }
 
 .card-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.word-badge-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
 }
 
 .word-badge {
   font-family: var(--font-mono);
-  font-size: 1.4rem;
+  font-size: 1.45rem;
   font-weight: 700;
   letter-spacing: 0.05em;
   color: var(--accent-gold);
+}
+.rarity-epic .word-badge { color: #c084fc; }
+.rarity-mythic .word-badge {
+  background: var(--accent-mythic);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.rarity-pill {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 0.2rem 0.55rem;
+  border-radius: 12px;
+  text-transform: uppercase;
+}
+.pill-mythic { background: rgba(255, 0, 128, 0.2); color: #ff3399; border: 1px solid rgba(255, 0, 128, 0.4); }
+.pill-epic { background: rgba(138, 43, 226, 0.2); color: #c084fc; border: 1px solid rgba(138, 43, 226, 0.4); }
+.pill-rare { background: rgba(255, 183, 3, 0.15); color: var(--accent-gold); border: 1px solid rgba(255, 183, 3, 0.3); }
+.pill-uncommon { background: rgba(0, 242, 254, 0.15); color: var(--accent-cyan); border: 1px solid rgba(0, 242, 254, 0.3); }
+.pill-common { background: rgba(255, 255, 255, 0.06); color: var(--text-muted); }
+
+.syntax-badge {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  background: rgba(121, 40, 202, 0.2);
+  color: #d8b4fe;
+  padding: 0.2rem 0.55rem;
+  border-radius: 6px;
+  border: 1px solid rgba(121, 40, 202, 0.3);
 }
 
 .offset-pill {
@@ -604,7 +697,7 @@ body {
   font-size: 0.8125rem;
   color: var(--text-muted);
   background: rgba(0, 0, 0, 0.4);
-  padding: 0.4rem 0.6rem;
+  padding: 0.45rem 0.65rem;
   border-radius: var(--radius-sm);
   word-break: break-all;
 }
@@ -614,13 +707,14 @@ body {
   font-size: 0.95rem;
   color: #fff;
   background: rgba(0, 0, 0, 0.5);
-  padding: 0.5rem 0.75rem;
+  padding: 0.6rem 0.85rem;
   border-radius: var(--radius-sm);
   border-left: 3px solid var(--accent-gold);
 }
+.rarity-epic .card-ascii-context { border-left-color: var(--accent-violet); }
+.rarity-mythic .card-ascii-context { border-left-color: #ff007f; }
 
 .empty-state {
-  grid-column: 1 / -1;
   text-align: center;
   padding: 4rem 1rem;
   color: var(--text-muted);
@@ -640,9 +734,7 @@ body {
 }
 
 @keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+  to { transform: rotate(360deg); }
 }
 
 .app-footer {
@@ -659,12 +751,16 @@ body {
     flex-direction: column;
     align-items: flex-start;
   }
-
   .telemetry-grid {
     grid-template-columns: 1fr;
   }
-
   .search-box {
     width: 100%;
+  }
+  .timeline-container {
+    padding-left: 1.5rem;
+  }
+  .timeline-marker {
+    left: -1.85rem;
   }
 }
